@@ -15,6 +15,9 @@ import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
+import NutritionCard from '../components/NutritionCard.jsx'
+import NutritionWizardModal from '../components/NutritionWizardModal.jsx'
+import FoodLoggerSheet from '../components/FoodLoggerSheet.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -24,6 +27,8 @@ export default function Home() {
   // The banner switched off and the sync stuck: a dot on the gear (Settings → Show connection status).
   const trouble = useConnectionTrouble()
   const [weekOffset, setWeekOffset] = useState(0)
+  const [showNutritionWizard, setShowNutritionWizard] = useState(false)
+  const [showFoodLogger, setShowFoodLogger] = useState(false)
 
   const today = new Date()
   // A weekday can hold several routines. `todayRoutines` is the whole day; `routine` is the
@@ -158,6 +163,12 @@ export default function Home() {
       </div>}
     </div>
 
+    {/* Nutrition & Daily Calories Tracker Card */}
+    <NutritionCard
+      onOpenWizard={() => setShowNutritionWizard(true)}
+      onOpenLog={() => setShowFoodLogger(true)}
+    />
+
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
     {S.checkIn !== false && (
@@ -235,5 +246,15 @@ export default function Home() {
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>
     </div>
+
+    {/* Modals for Nutrition Tracker */}
+    <NutritionWizardModal
+      open={showNutritionWizard}
+      onClose={() => setShowNutritionWizard(false)}
+    />
+    <FoodLoggerSheet
+      open={showFoodLogger}
+      onClose={() => setShowFoodLogger(false)}
+    />
   </div>
 }
