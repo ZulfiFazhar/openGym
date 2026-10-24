@@ -237,6 +237,9 @@ export const DEF = {
   // cleared) replaces that role's curated exercise-id whitelist with a single user-chosen
   // exercise id; the stamp is what lets a sync keep the choice made last (lib/sync-merge.js).
   balanceTemplate: DEFAULT_TEMPLATE_ID, balanceOverrides: {},
+  // Daily calorie and macronutrient targets and food logs
+  nutritionTarget: null,
+  nutritionLogs: [],
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -1353,6 +1356,24 @@ export const useStore = create((set, get) => {
       let removed = false
       get().update(S => { removed = deleteEditedWorkout(S) })
       return removed
+    },
+    // Nutrition targets & food logs
+    setNutritionTarget(target) {
+      get().update(S => {
+        S.nutritionTarget = target ? { ...target, t: Date.now() } : null
+      })
+    },
+    addNutritionLog(entry) {
+      get().update(S => {
+        const id = entry.id || 'nl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+        const log = { ...entry, id, t: entry.t || Date.now() }
+        S.nutritionLogs = [log, ...(S.nutritionLogs || [])]
+      })
+    },
+    deleteNutritionLog(id) {
+      get().update(S => {
+        S.nutritionLogs = (S.nutritionLogs || []).filter(e => e?.id !== id)
+      })
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,
     // only the label changes. Either way the choice is stamped (`unitSet`), so a merge with a

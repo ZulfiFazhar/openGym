@@ -173,6 +173,17 @@ export function mergeBodyweight(a = [], b = []) {
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
 
+/** Nutrition logs: union by entry id; where both have an id, the one with later timestamp `t`. */
+export function mergeNutritionLogs(a = [], b = []) {
+  const byId = new Map()
+  for (const e of [...list(a), ...list(b)]) {
+    if (!e || e.id == null) continue
+    const cur = byId.get(e.id)
+    if (!cur || (Number(e.t) || 0) >= (Number(cur.t) || 0)) byId.set(e.id, e)
+  }
+  return [...byId.values()].sort((x, y) => (Number(y.t) || 0) - (Number(x.t) || 0))
+}
+
 // The kept load per exercise. "The larger one wins" held while the app only ever raised it —
 // but an assistance machine progresses downwards, so there the smaller number is the newer,
 // harder setting and taking the larger would hand back the help the other device just dropped
@@ -821,6 +832,17 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
+  if (list(n.nutritionLogs).length || list(o.nutritionLogs).length) out.nutritionLogs = mergeNutritionLogs(n.nutritionLogs, o.nutritionLogs).map(clone)
+  else out.nutritionLogs = []
+
+  const ntA = a?.nutritionTarget, ntB = b?.nutritionTarget
+  if (ntA && ntB) {
+    out.nutritionTarget = (Number(ntB.t) || 0) > (Number(ntA.t) || 0) ? clone(ntB) : clone(ntA)
+  } else if (ntA || ntB) {
+    out.nutritionTarget = clone(ntA || ntB)
+  } else {
+    out.nutritionTarget = null
+  }
   // What either device removed stays removed (the `deleted` section above). A workout taken out
   // this way leaves its exercises' kept loads to be read again, as an edit of it would: from the
   // merged history and from the deleting copy's own, which already let go of what it held.
