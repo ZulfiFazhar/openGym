@@ -1,0 +1,115 @@
+.food-sheet-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+@media (min-width: 640px) {
+  .food-sheet-overlay { align-items: center; }
+}
+
+.food-sheet {
+  background: var(--bg-card, #1c1c1e);
+  color: #fff;
+  width: 100%; max-width: 540px;
+  border-top-left-radius: 24px; border-top-right-radius: 24px;
+  max-height: 90vh; display: flex; flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .food-sheet { border-radius: 24px; max-height: 85vh; }
+}
+
+.food-sheet-header {
+  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.food-sheet-title { font-size: 17px; font-weight: 700; }
+.food-sheet-close {
+  background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
+  width: 30px; height: 30px; color: #fff; font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.food-sheet-body {
+  padding: 18px 20px; overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.food-action-tabs {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.food-action-btn {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 10px 6px; color: #fff; font-size: 12px; font-weight: 600;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+  transition: all 0.2s;
+}
+.food-action-btn:hover, .food-action-btn.active {
+  background: rgba(16, 185, 129, 0.15); border-color: var(--acc, #10b981); color: var(--acc, #10b981);
+}
+
+.food-summary-bar {
+  background: rgba(255,255,255,0.04); border-radius: 14px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.food-sum-cal { font-size: 20px; font-weight: 700; color: var(--acc, #10b981); }
+.food-sum-macros { display: flex; gap: 10px; font-size: 12px; color: rgba(255,255,255,0.7); }
+
+.food-list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.food-item-row {
+  background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.food-item-left h5 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.food-item-left p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
+.food-item-right {
+  display: flex; align-items: center; gap: 12px;
+}
+.food-item-cal { font-size: 15px; font-weight: 700; color: var(--acc, #10b981); }
+.food-item-del {
+  background: none; border: none; color: rgba(255,255,255,0.4); font-size: 16px; cursor: pointer;
+}
+.food-item-del:hover { color: #f87171; }
+
+.food-review-modal {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.food-review-title { font-size: 15px; font-weight: 700; color: var(--acc, #10b981); }
+.food-review-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.food-review-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.food-review-field label { font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+.food-review-field input {
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 8px; color: #fff; font-size: 13px; text-align: center;
+}
+.food-review-actions {
+  display: flex; gap: 10px; margin-top: 8px;
+}
+.food-review-actions button {
+  flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none;
+}
+.food-btn-save { background: var(--acc, #10b981); color: #000; }
+.food-btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+
+.scanner-box {
+  width: 100%; height: 260px; background: #000; border-radius: 14px;
+  overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;
+}
+.scanner-video { width: 100%; height: 100%; object-fit: cover; }
+.scanner-reticle {
+  position: absolute; width: 70%; height: 60%;
+  border: 2px dashed rgba(16, 185, 129, 0.8); border-radius: 12px;
+  pointer-events: none;
+}
