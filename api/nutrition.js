@@ -121,6 +121,27 @@ Return ONLY a valid JSON object without any markdown formatting or extra text:
 }`;
 }
 
+export function estimateFoodFallback(query = '') {
+  const q = String(query).toLowerCase();
+  let cal = 450, p = 25, c = 45, f = 15;
+  if (q.includes('telur') || q.includes('egg')) { cal = 150; p = 12; c = 2; f = 10; }
+  else if (q.includes('salad')) { cal = 200; p = 8; c = 15; f = 10; }
+  else if (q.includes('nasi') || q.includes('rice')) { cal = 550; p = 22; c = 75; f = 16; }
+  else if (q.includes('sate') || q.includes('steak') || q.includes('daging')) { cal = 500; p = 35; c = 30; f = 22; }
+  else if (q.includes('ayam') || q.includes('chicken')) { cal = 420; p = 32; c = 20; f = 18; }
+  else if (q.includes('kopi') || q.includes('coffee')) { cal = 80; p = 2; c = 10; f = 3; }
+  
+  return {
+    name: query || 'Makanan Campuran',
+    serving: '1 porsi (estimasi offline)',
+    calories: cal,
+    protein: p,
+    carbs: c,
+    fat: f,
+    confidence: 0.5
+  };
+}
+
 export function parseNutritionAiResponse(raw) {
   if (!raw || typeof raw !== 'string') return {};
   const trimmed = raw.trim();
@@ -260,7 +281,11 @@ export function nutritionRoutes({ json, readBody, readSession }) {
         }
         throw new Error('Incomplete food analysis response');
       } catch (err) {
-        console.error('AI food analysis error:', err.message);
+        console.warn('AI food analysis error, falling back to estimation:', err.message);
+        if (query) {
+          const fallback = estimateFoodFallback(query);
+          return json(res, 200, { ok: true, item: fallback, fallback: true });
+        }
         return json(res, 500, { ok: false, error: err.message });
       }
     }

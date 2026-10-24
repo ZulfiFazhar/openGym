@@ -43,3 +43,11 @@ test('buildFoodAnalysisPrompt specifies mode instructions', () => {
   const labelPrompt = buildFoodAnalysisPrompt({ mode: 'label' });
   assert.match(labelPrompt, /nutrition facts|label/i);
 });
+
+test('estimateFoodFallback provides sensible offline food estimates', async () => {
+  const { estimateFoodFallback } = await import('../nutrition.js');
+  const res = estimateFoodFallback('1 porsi ayam bakar');
+  assert.equal(res.name, '1 porsi ayam bakar');
+  assert.ok(res.calories > 300);
+  assert.ok(res.protein >= 25);
+});
