@@ -45,6 +45,26 @@ services:
         condition: service_started
     ports:
       - "${WEB_PORT:-8080}:${NGINX_PORT:-80}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:80/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 2s
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.opengym.entrypoints=websecure"
+      - "traefik.http.routers.opengym.rule=Host(`gym.zulfifazhar.dev`)"
+      - "traefik.http.routers.opengym.tls.certresolver=myresolver"
+      - "traefik.http.routers.opengym-http.entrypoints=web"
+      - "traefik.http.routers.opengym-http.rule=Host(`gym.zulfifazhar.dev`)"
+      - "traefik.http.routers.opengym-http.middlewares=opengym-redirect-https"
+      - "traefik.http.middlewares.opengym-redirect-https.redirectscheme.scheme=https"
+      - "traefik.http.services.opengym.loadbalancer.server.port=80"
     # nginx renders its config at start-up from these (web/nginx.conf.template),
     # so the API service does not have to be called `api`. Defaults are the old
     # hardcoded values, so an existing .env and an existing stack are unaffected.
@@ -64,3 +84,8 @@ services:
       # The largest photo or video upload nginx passes to the API. Keep it above
       # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
       - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+
+networks:
+  default:
+  proxy:
+    external: true
