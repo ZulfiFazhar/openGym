@@ -711,6 +711,37 @@ function releaseFilter(id) {
   }
 }
 
+export function ensureGlassDistortionFilter() {
+  const id = 'glass-distortion'
+  if (filterRefs.has(id)) return
+  const h = host()
+  if (!h) return
+  if (h.querySelector && h.querySelector(`#${id}`)) return
+  const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter')
+  filter.setAttribute('id', id)
+  filter.setAttribute('x', '0%')
+  filter.setAttribute('y', '0%')
+  filter.setAttribute('width', '100%')
+  filter.setAttribute('height', '100%')
+  filter.setAttribute('filterUnits', 'objectBoundingBox')
+  filter.innerHTML = `
+    <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence"/>
+    <feComponentTransfer in="turbulence" result="mapped">
+      <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5"/>
+      <feFuncG type="gamma" amplitude="0" exponent="1" offset="0"/>
+      <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5"/>
+    </feComponentTransfer>
+    <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap"/>
+    <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lightingColor="white" result="specLight">
+      <fePointLight x="-200" y="-200" z="300"/>
+    </feSpecularLighting>
+    <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage"/>
+    <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R" yChannelSelector="G"/>
+  `
+  h.appendChild(filter)
+  filterRefs.set(id, { el: filter, count: 1 })
+}
+
 function filterMarkup(opts) {
   const { w, h, field, material, appearance, refraction, dispersion, tint, nested } = opts
   const dark = appearance === 'dark'
@@ -1027,6 +1058,7 @@ export function useLiquidGlass(options, rootRef) {
   const engine = React.useMemo(() => (typeof window === 'undefined' ? 'chromium' : detectEngine()), [])
 
   useIsoLayoutEffect(() => {
+    ensureGlassDistortionFilter()
     setMode(requestedMode === 'auto' ? detectMode() : requestedMode)
   }, [requestedMode])
 
@@ -1201,9 +1233,11 @@ export function useLiquidGlass(options, rootRef) {
           pointerEvents: 'none',
           backdropFilter: backdrop,
           WebkitBackdropFilter: backdrop,
+          filter: !refracting ? 'url(#glass-distortion)' : undefined,
           clipPath: mode === 'refract' ? map?.clip : undefined,
           transform: fluidTransform,
           transformOrigin: '0 0',
+          isolation: 'isolate',
         }}
       />
       {map ? (
@@ -1227,28 +1261,43 @@ export function useLiquidGlass(options, rootRef) {
             />
           ) : null}
           {!refracting ? (
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: -1,
-                borderRadius: 'inherit',
-                pointerEvents: 'none',
-                backgroundColor:
-                  material === 'regular'
-                    ? tintRGB
-                      ? `rgb(${tintRGB.map((c) => Math.round(c * 255)).join(' ')} / ${spec.fillOpacity})`
+            <React.Fragment>
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: -1,
+                  borderRadius: 'inherit',
+                  pointerEvents: 'none',
+                  backgroundColor:
+                    material === 'regular'
+                      ? tintRGB
+                        ? `rgb(${tintRGB.map((c) => Math.round(c * 255)).join(' ')} / ${spec.fillOpacity})`
+                        : dark
+                          ? `rgb(16 16 18 / ${spec.fillOpacity})`
+                          : `rgb(255 255 255 / ${spec.fillOpacity})`
                       : dark
-                        ? `rgb(16 16 18 / ${spec.fillOpacity})`
-                        : `rgb(255 255 255 / ${spec.fillOpacity})`
-                    : dark
-                      ? 'rgba(18, 22, 30, 0.72)'
-                      : 'rgba(255, 255, 255, 0.78)',
-                border: 'none',
-                boxShadow: 'none',
-              }}
-            />
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'rgba(255, 255, 255, 0.25)',
+                  border: 'none',
+                }}
+              />
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: -1,
+                  borderRadius: 'inherit',
+                  overflow: 'hidden',
+                  pointerEvents: 'none',
+                  boxShadow: dark
+                    ? 'inset 2px 2px 1px 0 rgba(255, 255, 255, 0.22), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.12)'
+                    : 'inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5)',
+                }}
+              />
+            </React.Fragment>
           ) : null}
           {refracting && material === 'clear' && dark ? (
             <span

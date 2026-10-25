@@ -101,15 +101,36 @@ describe('LiquidGlass component', () => {
       expect(lens.style.clipPath).toBeFalsy()
       expect(lens.style.backdropFilter).toContain('blur')
 
-      // Pure glassmorphism on iOS without border stroke or stroke overlay
+      // Glassmorphism on iOS matches 21st.dev liquid-glass layer architecture
       spans.forEach((s) => {
         expect(s.style.border || 'none').toMatch(/^(none|0px)?(\s*(none|0px))*$/)
         expect(s.style.backgroundImage || 'none').not.toContain('data:image')
-        expect(s.style.boxShadow || 'none').not.toContain('inset')
       })
+      const hasInsetReflection = Array.from(spans).some((s) => s.style.boxShadow?.includes('inset'))
+      expect(hasInsetReflection).toBe(true)
     } finally {
       if (origWidth) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', origWidth)
       if (origHeight) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', origHeight)
     }
+  })
+
+  it('exports standalone 21st.dev liquid-glass components (GlassEffect, GlassButton, GlassFilter) in tsx', async () => {
+    const { GlassEffect, GlassButton, GlassFilter, GlassDock } = await import('./liquid-glass.tsx')
+    expect(GlassEffect).toBeDefined()
+    expect(GlassButton).toBeDefined()
+    expect(GlassFilter).toBeDefined()
+    expect(GlassDock).toBeDefined()
+
+    act(() => {
+      root.render(
+        <GlassButton data-testid="standalone-glass-tsx-btn">
+          <span>Standalone Glass TSX</span>
+        </GlassButton>
+      )
+    })
+
+    const el = host.querySelector('[data-testid="standalone-glass-tsx-btn"]')
+    expect(el).not.toBeNull()
+    expect(el.textContent).toBe('Standalone Glass TSX')
   })
 })
