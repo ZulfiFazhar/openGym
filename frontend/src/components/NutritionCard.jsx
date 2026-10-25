@@ -32,14 +32,35 @@ export default function NutritionCard({ onOpenLog, onOpenWizard }) {
           <Icon name="sparkles" size={20} style={{ color: 'var(--acc, #10b981)' }} />
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Today's Nutrition</h2>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <Button size="sm" variant="ghost" onClick={onOpenWizard}>
-            {target ? 'Edit Target' : 'AI Target'}
-          </Button>
-          <Button size="sm" variant="primary" icon="plus" onClick={onOpenLog}>
-            Log Food
-          </Button>
-        </div>
+      </div>
+
+      <div
+        className="nutrition-card-actions"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: 8,
+          marginBottom: 14
+        }}
+      >
+        <Button
+          size="sm"
+          variant="tinted"
+          icon="sparkles"
+          onClick={onOpenWizard}
+          style={{ width: '100%', justifyContent: 'center' }}
+        >
+          {target ? 'Edit Target' : 'AI Target'}
+        </Button>
+        <Button
+          size="sm"
+          variant="primary"
+          icon="plus"
+          onClick={onOpenLog}
+          style={{ width: '100%', justifyContent: 'center' }}
+        >
+          Log Food
+        </Button>
       </div>
 
       {targetCal ? (
