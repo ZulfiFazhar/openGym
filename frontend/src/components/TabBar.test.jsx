@@ -115,3 +115,33 @@ describe('the tab icons and labels', () => {
     } finally { vi.useRealTimers() }
   })
 })
+
+describe('dock navigation styling', () => {
+  it('uses clean transparent blur without liquid glass reflections or high saturation', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const cssPath = path.resolve(__dirname, '../index.css')
+    const css = fs.readFileSync(cssPath, 'utf8')
+
+    const pillMatch = css.match(/#tabbar \.tab-pill\{([^}]+)\}/)
+    expect(pillMatch).toBeTruthy()
+    const pillRules = pillMatch[1]
+
+    // Liquid glass removed
+    expect(pillRules).not.toContain('saturate(190%)')
+    expect(pillRules).not.toContain('inset 0 1px 1px')
+    expect(pillRules).not.toContain('linear-gradient')
+
+    // Clean transparent blur present
+    expect(pillRules).toMatch(/backdrop-filter:blur\(20px\)/)
+    expect(pillRules).toMatch(/background:rgba\(18,\s*21,\s*28,\s*0\.75\)/)
+
+    const startMatch = css.match(/#tabbar button\.start\{([^}]+)\}/)
+    expect(startMatch).toBeTruthy()
+    const startRules = startMatch[1]
+    expect(startRules).not.toContain('saturate(190%)')
+    expect(startRules).not.toContain('inset 0 1px 1px')
+    expect(startRules).not.toContain('linear-gradient')
+    expect(startRules).toMatch(/backdrop-filter:blur\(20px\)/)
+  })
+})
