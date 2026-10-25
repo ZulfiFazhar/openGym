@@ -50,4 +50,5 @@ test('estimateFoodFallback provides sensible offline food estimates', async () =
   assert.equal(res.name, '1 porsi ayam bakar');
   assert.ok(res.calories > 300);
   assert.ok(res.protein >= 25);
+  assert.match(res.serving, /portion/i);
 });

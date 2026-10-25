@@ -34,6 +34,7 @@ describe('NutritionCard', () => {
     act(() => { root.render(<NutritionCard onOpenLog={() => {}} onOpenWizard={() => {}} />) })
     expect(host.textContent).toContain('400')
     expect(host.textContent).toContain('2,200')
-    expect(host.textContent).toContain('Catat Makanan')
+    expect(host.textContent).toContain('Log Food')
+    expect(host.textContent).toContain("Today's Nutrition")
   })
 })

@@ -24,13 +24,13 @@ describe('NutritionWizardModal', () => {
   it('renders step 1 and advances to step 2 when Next is clicked', () => {
     act(() => { root.render(<NutritionWizardModal open={true} onClose={() => {}} />) })
     expect(host.textContent).toContain('1/5')
-    expect(host.textContent).toContain('Profil Fisik')
+    expect(host.textContent).toContain('Physical Profile')
 
     const nextBtn = host.querySelector('.wiz-btn-next')
     expect(nextBtn).toBeTruthy()
     act(() => { nextBtn.click() })
 
     expect(host.textContent).toContain('2/5')
-    expect(host.textContent).toContain('Aktivitas')
+    expect(host.textContent).toContain('Activity')
   })
 })

@@ -51,7 +51,7 @@ export default function NutritionWizardModal({ open, onClose }) {
           protein: local.protein,
           carbs: local.carbs,
           fat: local.fat,
-          reasoning: 'Rekomendasi dihitung menggunakan kalkulasi offline standar Mifflin-St Jeor.'
+          reasoning: 'Recommendation calculated using the offline standard Mifflin-St Jeor formula.'
         })
       } finally {
         setLoading(false)
@@ -94,12 +94,12 @@ export default function NutritionWizardModal({ open, onClose }) {
         <div className="wiz-body">
           {step === 1 && (
             <>
-              <div className="wiz-step-badge">Langkah 1/5 • Profil Fisik</div>
-              <div className="wiz-step-desc">Masukkan informasi fisik dasar untuk menghitung laju metabolisme dasar (BMR) Anda.</div>
+              <div className="wiz-step-badge">Step 1/5 • Physical Profile</div>
+              <div className="wiz-step-desc">Enter basic physical metrics to calculate your Basal Metabolic Rate (BMR).</div>
 
               <div className="wiz-grid-2">
                 <div className="wiz-field">
-                  <label>Berat Badan (kg)</label>
+                  <label>Body Weight (kg)</label>
                   <input
                     type="number"
                     value={profile.weightKg}
@@ -108,7 +108,7 @@ export default function NutritionWizardModal({ open, onClose }) {
                   />
                 </div>
                 <div className="wiz-field">
-                  <label>Tinggi Badan (cm)</label>
+                  <label>Height (cm)</label>
                   <input
                     type="number"
                     value={profile.heightCm}
@@ -120,7 +120,7 @@ export default function NutritionWizardModal({ open, onClose }) {
 
               <div className="wiz-grid-2">
                 <div className="wiz-field">
-                  <label>Umur (tahun)</label>
+                  <label>Age (years)</label>
                   <input
                     type="number"
                     value={profile.age}
@@ -129,13 +129,13 @@ export default function NutritionWizardModal({ open, onClose }) {
                   />
                 </div>
                 <div className="wiz-field">
-                  <label>Jenis Kelamin</label>
+                  <label>Biological Sex</label>
                   <select
                     value={profile.gender}
                     onChange={e => setProfile({ ...profile, gender: e.target.value })}
                   >
-                    <option value="male">Laki-laki</option>
-                    <option value="female">Perempuan</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
                   </select>
                 </div>
               </div>
@@ -144,16 +144,16 @@ export default function NutritionWizardModal({ open, onClose }) {
 
           {step === 2 && (
             <>
-              <div className="wiz-step-badge">Langkah 2/5 • Aktivitas & Olahraga</div>
-              <div className="wiz-step-desc">Tentukan seberapa aktif aktivitas fisik Anda sehari-hari untuk menghitung Total Daily Energy Expenditure (TDEE).</div>
+              <div className="wiz-step-badge">Step 2/5 • Activity & Exercise</div>
+              <div className="wiz-step-desc">Select your daily physical activity level to calculate your Total Daily Energy Expenditure (TDEE).</div>
 
               <div
                 className={`wiz-option-card ${profile.activityLevel === 'sedentary' ? 'selected' : ''}`}
                 onClick={() => setProfile({ ...profile, activityLevel: 'sedentary' })}
               >
                 <div>
-                  <h4>Sedentary (Duduk & Santai)</h4>
-                  <p>Banyak duduk di meja kerja, minim pergerakan fisik harian.</p>
+                  <h4>Sedentary (Little or no exercise)</h4>
+                  <p>Mostly sitting at a desk, minimal daily physical movement.</p>
                 </div>
               </div>
 
@@ -162,8 +162,8 @@ export default function NutritionWizardModal({ open, onClose }) {
                 onClick={() => setProfile({ ...profile, activityLevel: 'light' })}
               >
                 <div>
-                  <h4>Ringan (Light Active)</h4>
-                  <p>Aktivitas harian ringan atau latihan 1-3 hari per minggu.</p>
+                  <h4>Lightly Active</h4>
+                  <p>Light daily activity or workouts 1-3 days per week.</p>
                 </div>
               </div>
 
@@ -172,8 +172,8 @@ export default function NutritionWizardModal({ open, onClose }) {
                 onClick={() => setProfile({ ...profile, activityLevel: 'moderate' })}
               >
                 <div>
-                  <h4>Moderat (Moderate Active)</h4>
-                  <p>Latihan beban/kardio intensitas sedang 3-5 hari per minggu.</p>
+                  <h4>Moderately Active</h4>
+                  <p>Moderate intensity training or cardio 3-5 days per week.</p>
                 </div>
               </div>
 
@@ -182,8 +182,8 @@ export default function NutritionWizardModal({ open, onClose }) {
                 onClick={() => setProfile({ ...profile, activityLevel: 'very_active' })}
               >
                 <div>
-                  <h4>Sangat Aktif (Heavy / Athlete)</h4>
-                  <p>Latihan keras hampir setiap hari atau pekerjaan fisik berat.</p>
+                  <h4>Very Active (Heavy / Athlete)</h4>
+                  <p>Hard training almost every day or physical labor job.</p>
                 </div>
               </div>
             </>
@@ -191,8 +191,8 @@ export default function NutritionWizardModal({ open, onClose }) {
 
           {step === 3 && (
             <>
-              <div className="wiz-step-badge">Langkah 3/5 • Target Kebugaran</div>
-              <div className="wiz-step-desc">Pilih target tubuh Anda agar AI dapat menentukan defisit atau surplus kalori yang tepat.</div>
+              <div className="wiz-step-badge">Step 3/5 • Fitness Goal</div>
+              <div className="wiz-step-desc">Choose your fitness goal so AI can determine the right calorie deficit or surplus.</div>
 
               <div
                 className={`wiz-option-card ${profile.goal === 'cut' ? 'selected' : ''}`}
@@ -200,7 +200,7 @@ export default function NutritionWizardModal({ open, onClose }) {
               >
                 <div>
                   <h4>Fat Loss / Cutting</h4>
-                  <p>Mengurangi lemak tubuh dengan defisit kalori terukur dan menjaga massa otot.</p>
+                  <p>Lose body fat with a controlled caloric deficit while preserving muscle mass.</p>
                 </div>
               </div>
 
@@ -210,7 +210,7 @@ export default function NutritionWizardModal({ open, onClose }) {
               >
                 <div>
                   <h4>Maintenance / Body Recomp</h4>
-                  <p>Menjaga berat badan tetap stabil sambil meningkatkan komposisi otot.</p>
+                  <p>Maintain stable weight while improving muscle definition and body composition.</p>
                 </div>
               </div>
 
@@ -220,7 +220,7 @@ export default function NutritionWizardModal({ open, onClose }) {
               >
                 <div>
                   <h4>Muscle Gain / Bulking</h4>
-                  <p>Menambah massa otot optimal dengan surplus kalori bersih (lean bulk).</p>
+                  <p>Build muscle effectively with a clean caloric surplus (lean bulk).</p>
                 </div>
               </div>
             </>
@@ -228,28 +228,28 @@ export default function NutritionWizardModal({ open, onClose }) {
 
           {step === 4 && (
             <>
-              <div className="wiz-step-badge">Langkah 4/5 • Preferensi & Catatan Diet</div>
-              <div className="wiz-step-desc">Beri tahu AI jika ada preferensi makanan tertentu atau catatan khusus (opsional).</div>
+              <div className="wiz-step-badge">Step 4/5 • Dietary Preferences & Notes</div>
+              <div className="wiz-step-desc">Let AI know about any dietary preferences or specific requirements (optional).</div>
 
               <div className="wiz-field">
-                <label>Preferensi Pola Makan</label>
+                <label>Dietary Preference</label>
                 <select
                   value={profile.diet}
                   onChange={e => setProfile({ ...profile, diet: e.target.value })}
                 >
-                  <option value="">Standar Seimbang</option>
-                  <option value="high_protein">Tinggi Protein (High Protein)</option>
-                  <option value="low_carb">Rendah Karbohidrat (Low Carb)</option>
+                  <option value="">Standard / Balanced</option>
+                  <option value="high_protein">High Protein</option>
+                  <option value="low_carb">Low Carb</option>
                   <option value="intermittent_fasting">Intermittent Fasting</option>
                   <option value="vegetarian">Vegetarian / Halal</option>
                 </select>
               </div>
 
               <div className="wiz-field">
-                <label>Catatan Tambahan untuk AI</label>
+                <label>Additional Notes for AI</label>
                 <textarea
                   rows="3"
-                  placeholder="Misal: Saya ingin fokus mempercepat cutting di perut tanpa kehilangan tenaga latihan..."
+                  placeholder="e.g., Focusing on cutting fat while preserving strength during workouts..."
                   value={profile.notes || ''}
                   onChange={e => setProfile({ ...profile, notes: e.target.value })}
                 />
@@ -259,18 +259,18 @@ export default function NutritionWizardModal({ open, onClose }) {
 
           {step === 5 && (
             <>
-              <div className="wiz-step-badge">Langkah 5/5 • Hasil Rekomendasi AI</div>
+              <div className="wiz-step-badge">Step 5/5 • AI Recommended Target</div>
 
               {loading ? (
                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <Icon name="sparkles" size={32} />
                   <p style={{ marginTop: 14, color: 'rgba(255,255,255,0.8)' }}>
-                    AI Coach sedang menganalisis profil dan menghitung strategi kalori...
+                    AI Coach is analyzing your profile and formulating a calorie strategy...
                   </p>
                 </div>
               ) : result ? (
                 <div className="wiz-result-card">
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Target Kalori Harian</div>
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Daily Calorie Target</div>
                   <div className="wiz-result-calories">{result.calories} kcal</div>
                   <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
                     BMR: {result.bmr} kcal • TDEE: {result.tdee} kcal
@@ -283,11 +283,11 @@ export default function NutritionWizardModal({ open, onClose }) {
                     </div>
                     <div className="wiz-macro-box">
                       <div className="wiz-macro-val" style={{ color: '#fbbf24' }}>{result.carbs}g</div>
-                      <div className="wiz-macro-lbl">Karbo</div>
+                      <div className="wiz-macro-lbl">Carbs</div>
                     </div>
                     <div className="wiz-macro-box">
                       <div className="wiz-macro-val" style={{ color: '#f87171' }}>{result.fat}g</div>
-                      <div className="wiz-macro-lbl">Lemak</div>
+                      <div className="wiz-macro-lbl">Fat</div>
                     </div>
                   </div>
 
@@ -305,18 +305,18 @@ export default function NutritionWizardModal({ open, onClose }) {
         <div className="wiz-footer">
           {step > 1 && step < 5 && (
             <button className="wiz-btn-back" onClick={handleBack}>
-              Kembali
+              Back
             </button>
           )}
           {step < 5 ? (
             <button className="wiz-btn-next" onClick={handleNext}>
-              <span>{step === 4 ? 'Hitung dengan AI' : 'Lanjut'}</span>
+              <span>{step === 4 ? 'Calculate with AI' : 'Next'}</span>
               <Icon name="chevronRight" size={16} />
             </button>
           ) : (
             <button className="wiz-btn-apply" onClick={handleApply} disabled={loading || !result}>
               <Icon name="check" size={16} />
-              <span>Terapkan ke Target Saya</span>
+              <span>Apply to My Target</span>
             </button>
           )}
         </div>

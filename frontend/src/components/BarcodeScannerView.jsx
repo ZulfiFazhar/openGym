@@ -18,7 +18,7 @@ export default function BarcodeScannerView({ onBarcode, onCaptureLabel, onCancel
 
     ;(async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setError('Kamera tidak didukung pada browser ini.')
+        setError('Camera is not supported on this browser.')
         return
       }
       try {
@@ -27,7 +27,7 @@ export default function BarcodeScannerView({ onBarcode, onCaptureLabel, onCancel
           audio: false
         })
       } catch (e) {
-        setError('Akses kamera ditolak atau tidak tersedia.')
+        setError('Camera access denied or unavailable.')
         return
       }
 
@@ -126,7 +126,7 @@ export default function BarcodeScannerView({ onBarcode, onCaptureLabel, onCancel
           }}
         >
           <Icon name="sparkles" size={16} />
-          <span>Foto Tabel Nilai Gizi</span>
+          <span>Snap Nutrition Label</span>
         </button>
 
         <label
@@ -136,7 +136,7 @@ export default function BarcodeScannerView({ onBarcode, onCaptureLabel, onCancel
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
           }}
         >
-          <span>Pilih Foto</span>
+          <span>Upload Photo</span>
           <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
         </label>
 
@@ -147,12 +147,12 @@ export default function BarcodeScannerView({ onBarcode, onCaptureLabel, onCancel
             borderRadius: 10, padding: '10px 14px', fontSize: 13, cursor: 'pointer'
           }}
         >
-          Batal
+          Cancel
         </button>
       </div>
 
       <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-        Arahkan kamera ke Barcode snack atau tekan "Foto Tabel Nilai Gizi"
+        Point camera at a snack barcode or tap "Snap Nutrition Label"
       </p>
     </div>
   )

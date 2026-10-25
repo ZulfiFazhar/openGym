@@ -90,7 +90,7 @@ Return ONLY a valid JSON object in this exact schema without any markdown format
   "protein": <number, grams of protein per day>,
   "carbs": <number, grams of carbs per day>,
   "fat": <number, grams of fat per day>,
-  "reasoning": "<short explanation in Indonesian of the strategy and macro split in 2-3 sentences>"
+  "reasoning": "<short explanation in English of the strategy and macro split in 2-3 sentences>"
 }`;
 }
 
@@ -111,8 +111,8 @@ Return ONLY a valid JSON object without any markdown formatting or extra text:
   return `Analyze this food dish ${query ? `with description: "${query}"` : 'from the image'}. Identify the meal name, estimate reasonable serving portion, total calories (kcal), and macronutrients (protein, carbs, fat in grams).
 Return ONLY a valid JSON object without any markdown formatting or extra text:
 {
-  "name": "<name of food/dish in Indonesian/English>",
-  "serving": "<estimated portion, e.g. 1 porsi (300g)>",
+  "name": "<name of food/dish in English>",
+  "serving": "<estimated portion, e.g. 1 portion (300g)>",
   "calories": <number in kcal>,
   "protein": <number in grams>,
   "carbs": <number in grams>,
@@ -127,13 +127,13 @@ export function estimateFoodFallback(query = '') {
   if (q.includes('telur') || q.includes('egg')) { cal = 150; p = 12; c = 2; f = 10; }
   else if (q.includes('salad')) { cal = 200; p = 8; c = 15; f = 10; }
   else if (q.includes('nasi') || q.includes('rice')) { cal = 550; p = 22; c = 75; f = 16; }
-  else if (q.includes('sate') || q.includes('steak') || q.includes('daging')) { cal = 500; p = 35; c = 30; f = 22; }
+  else if (q.includes('sate') || q.includes('steak') || q.includes('daging') || q.includes('beef') || q.includes('meat')) { cal = 500; p = 35; c = 30; f = 22; }
   else if (q.includes('ayam') || q.includes('chicken')) { cal = 420; p = 32; c = 20; f = 18; }
   else if (q.includes('kopi') || q.includes('coffee')) { cal = 80; p = 2; c = 10; f = 3; }
   
   return {
-    name: query || 'Makanan Campuran',
-    serving: '1 porsi (estimasi offline)',
+    name: query || 'Mixed meal',
+    serving: '1 portion (offline estimate)',
     calories: cal,
     protein: p,
     carbs: c,
@@ -260,7 +260,7 @@ export function nutritionRoutes({ json, readBody, readSession }) {
             protein,
             carbs,
             fat,
-            reasoning: `Target dihitung berbasis formula Mifflin-St Jeor dengan penyesuaian target ${profile.goal || 'maintain'} (${calories} kcal).`
+            reasoning: `Target calculated using the standard Mifflin-St Jeor formula adjusted for ${profile.goal || 'maintain'} goal (${calories} kcal).`
           }
         });
       }

@@ -36,7 +36,7 @@ export async function fetchWizardTarget(profile) {
     protein: local.protein,
     carbs: local.carbs,
     fat: local.fat,
-    reasoning: 'Rekomendasi dihitung menggunakan kalkulasi offline standar Mifflin-St Jeor.'
+    reasoning: 'Recommendation calculated using the offline standard Mifflin-St Jeor formula.'
   };
 }
 

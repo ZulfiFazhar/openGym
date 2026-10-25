@@ -30,14 +30,14 @@ export default function NutritionCard({ onOpenLog, onOpenWizard }) {
       <div className="row between" style={{ marginBottom: 12 }}>
         <div className="row" style={{ gap: 8, alignItems: 'center' }}>
           <Icon name="sparkles" size={20} style={{ color: 'var(--acc, #10b981)' }} />
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Nutrisi Hari Ini</h2>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Today's Nutrition</h2>
         </div>
         <div className="row" style={{ gap: 8 }}>
           <Button size="sm" variant="ghost" onClick={onOpenWizard}>
-            {target ? 'Atur Target' : 'Target AI'}
+            {target ? 'Edit Target' : 'AI Target'}
           </Button>
           <Button size="sm" variant="primary" icon="plus" onClick={onOpenLog}>
-            Catat Makanan
+            Log Food
           </Button>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function NutritionCard({ onOpenLog, onOpenWizard }) {
               {fmt(consumedCalories)} <span style={{ fontSize: 15, fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>/ {fmt(targetCal)} kcal</span>
             </div>
             <div style={{ fontSize: 13, fontWeight: 600, color: remainingCal >= 0 ? 'var(--acc, #10b981)' : '#f87171' }}>
-              {remainingCal >= 0 ? `Sisa ${fmt(remainingCal)} kcal` : `Lebih ${fmt(Math.abs(remainingCal))} kcal`}
+              {remainingCal >= 0 ? `${fmt(remainingCal)} kcal left` : `${fmt(Math.abs(remainingCal))} kcal over`}
             </div>
           </div>
 
@@ -76,14 +76,14 @@ export default function NutritionCard({ onOpenLog, onOpenWizard }) {
             </div>
 
             <div style={{ background: 'rgba(255,255,255,0.04)', padding: '8px 10px', borderRadius: 10 }}>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Karbo</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Carbs</div>
               <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#fbbf24' }}>
                 {Math.round(consumedCarbs)}g <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)' }}>/ {targetC}g</span>
               </div>
             </div>
 
             <div style={{ background: 'rgba(255,255,255,0.04)', padding: '8px 10px', borderRadius: 10 }}>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Lemak</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Fat</div>
               <div style={{ fontSize: 14, fontWeight: 700, marginTop: 2, color: '#f87171' }}>
                 {Math.round(consumedFat)}g <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)' }}>/ {targetF}g</span>
               </div>
@@ -93,10 +93,10 @@ export default function NutritionCard({ onOpenLog, onOpenWizard }) {
       ) : (
         <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
-            Belum ada target kalori harian. Hitung kebutuhan kalori harian (TDEE/BMR) Anda sekarang dengan bantuan AI Wizard.
+            No daily calorie target set. Calculate your daily energy needs (TDEE/BMR) with the AI Wizard now.
           </div>
           <Button variant="primary" icon="sparkles" onClick={onOpenWizard}>
-            Mulai AI Wizard Kalori
+            Start AI Calorie Wizard
           </Button>
         </div>
       )}

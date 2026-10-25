@@ -33,6 +33,6 @@ describe('FoodLoggerSheet', () => {
     act(() => { root.render(<FoodLoggerSheet open={true} onClose={() => {}} date="2026-10-24" />) })
     expect(host.textContent).toContain('Oatmeal with Honey')
     expect(host.textContent).toContain('300')
-    expect(host.textContent).toContain('Catat Makanan')
+    expect(host.textContent).toContain('Log Food')
   })
 })

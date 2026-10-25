@@ -32,7 +32,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
     e.preventDefault()
     if (!textQuery.trim()) return
     setAnalyzing(true)
-    setStatusMessage('Menganalisis makanan dengan AI...')
+    setStatusMessage('Analyzing food with AI...')
     try {
       const res = await analyzeFood({ query: textQuery, mode: 'food' })
       if (res && res.ok && res.item) {
@@ -49,7 +49,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
         setActiveMode(null)
         setTextQuery('')
       } else {
-        alert(res?.error || 'Gagal mendeteksi kalori makanan.')
+        alert(res?.error || 'Failed to analyze food nutrition.')
       }
     } finally {
       setAnalyzing(false)
@@ -63,12 +63,12 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
     const reader = new FileReader()
     reader.onload = async () => {
       setAnalyzing(true)
-      setStatusMessage('AI sedang mengidentifikasi piring makanan...')
+      setStatusMessage('AI is identifying the meal from photo...')
       try {
         const res = await analyzeFood({ imageBase64: reader.result, mode: 'food' })
         if (res && res.ok && res.item) {
           setReviewItem({
-            name: res.item.name || 'Hasil Foto',
+            name: res.item.name || 'Dish Photo',
             calories: res.item.calories || 0,
             protein: res.item.protein || 0,
             carbs: res.item.carbs || 0,
@@ -79,7 +79,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           })
           setActiveMode(null)
         } else {
-          alert('Gagal mendeteksi foto makanan.')
+          alert('Failed to detect food in photo.')
         }
       } finally {
         setAnalyzing(false)
@@ -92,7 +92,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
   const handleBarcodeFound = async (barcode) => {
     setActiveMode(null)
     setAnalyzing(true)
-    setStatusMessage(`Mencari barcode ${barcode}...`)
+    setStatusMessage(`Looking up barcode ${barcode}...`)
     try {
       const res = await fetchBarcodeNutrition(barcode)
       if (res && res.found && res.item) {
@@ -107,7 +107,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           source: 'barcode'
         })
       } else {
-        alert(`Barcode ${barcode} tidak ditemukan di database. Silakan gunakan foto tabel gizi.`)
+        alert(`Barcode ${barcode} not found in database. Please snap a photo of the nutrition label.`)
       }
     } finally {
       setAnalyzing(false)
@@ -118,12 +118,12 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
   const handleCaptureLabel = async (base64) => {
     setActiveMode(null)
     setAnalyzing(true)
-    setStatusMessage('AI membaca tabel informasi nilai gizi...')
+    setStatusMessage('AI is reading the nutrition facts label...')
     try {
       const res = await analyzeFood({ imageBase64: base64, mode: 'label' })
       if (res && res.ok && res.item) {
         setReviewItem({
-          name: res.item.name || 'Snack / Makanan Kemasan',
+          name: res.item.name || 'Packaged Snack / Food',
           calories: res.item.calories || 0,
           protein: res.item.protein || 0,
           carbs: res.item.carbs || 0,
@@ -133,7 +133,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           source: 'ai_label'
         })
       } else {
-        alert('Tidak dapat mendeteksi tabel nutrisi pada gambar.')
+        alert('Could not detect nutrition label in the image.')
       }
     } finally {
       setAnalyzing(false)
@@ -154,7 +154,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
     <div className="food-sheet-overlay" onClick={onClose}>
       <div className="food-sheet" onClick={e => e.stopPropagation()}>
         <div className="food-sheet-header">
-          <div className="food-sheet-title">Catat Makanan • {today}</div>
+          <div className="food-sheet-title">Log Food • {today}</div>
           <button className="food-sheet-close" onClick={onClose}>×</button>
         </div>
 
@@ -162,7 +162,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           {/* Quick Stats Summary */}
           <div className="food-summary-bar">
             <div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Total Masuk</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Total Consumed</div>
               <div className="food-sum-cal">{totalCalories} kcal</div>
             </div>
             <div className="food-sum-macros">
@@ -179,12 +179,12 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
               onClick={() => setActiveMode(m => m === 'text' ? null : 'text')}
             >
               <Icon name="sparkles" size={20} />
-              <span>Nama / Teks</span>
+              <span>Text / Name</span>
             </button>
 
             <label className={`food-action-btn ${activeMode === 'photo' ? 'active' : ''}`}>
               <Icon name="flame" size={20} />
-              <span>Foto Makanan</span>
+              <span>Food Photo</span>
               <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} style={{ display: 'none' }} />
             </label>
 
@@ -209,7 +209,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
             <form onSubmit={handleTextSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <input
                 type="text"
-                placeholder="Contoh: 1 porsi nasi padang rendang dan telur dadar"
+                placeholder="e.g. 1 bowl of chicken rice with scrambled eggs"
                 value={textQuery}
                 onChange={e => setTextQuery(e.target.value)}
                 autoFocus
@@ -225,7 +225,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
                   borderRadius: 10, padding: '10px 16px', fontWeight: 700, cursor: 'pointer'
                 }}
               >
-                Hitung Kalori dengan AI
+                Analyze with AI
               </button>
             </form>
           )}
@@ -242,7 +242,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           {/* Review & Confirm Card */}
           {reviewItem && (
             <div className="food-review-modal">
-              <div className="food-review-title">Konfirmasi Item Makanan</div>
+              <div className="food-review-title">Confirm Food Item</div>
               <input
                 type="text"
                 value={reviewItem.name}
@@ -255,7 +255,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
 
               <div className="food-review-grid">
                 <div className="food-review-field">
-                  <label>Kalori</label>
+                  <label>Calories</label>
                   <input
                     type="number"
                     value={reviewItem.calories}
@@ -271,7 +271,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
                   />
                 </div>
                 <div className="food-review-field">
-                  <label>Karbo (g)</label>
+                  <label>Carbs (g)</label>
                   <input
                     type="number"
                     value={reviewItem.carbs}
@@ -279,7 +279,7 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
                   />
                 </div>
                 <div className="food-review-field">
-                  <label>Lemak (g)</label>
+                  <label>Fat (g)</label>
                   <input
                     type="number"
                     value={reviewItem.fat}
@@ -289,8 +289,8 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
               </div>
 
               <div className="food-review-actions">
-                <button className="food-btn-cancel" onClick={() => setReviewItem(null)}>Batal</button>
-                <button className="food-btn-save" onClick={handleSaveReview}>Simpan Makanan</button>
+                <button className="food-btn-cancel" onClick={() => setReviewItem(null)}>Cancel</button>
+                <button className="food-btn-save" onClick={handleSaveReview}>Save Food</button>
               </div>
             </div>
           )}
@@ -298,11 +298,11 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
           {/* List of Today's Foods */}
           <div className="food-list">
             <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
-              Riwayat Makanan Hari Ini ({logs.length})
+              Today's Food Log ({logs.length})
             </div>
             {logs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 10px', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
-                Belum ada makanan yang dicatat hari ini. Gunakan tombol di atas untuk mencatat.
+                No food logged today yet. Use the options above to track your meals.
               </div>
             ) : (
               logs.map(item => (
