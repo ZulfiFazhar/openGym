@@ -11,6 +11,9 @@ import {
 import Icon from '../components/Icon.jsx'
 import { Button, Row, Section, Segmented } from '../components/ui.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
+import PlanNutrition from './PlanNutrition.jsx'
+import NutritionWizardModal from '../components/NutritionWizardModal.jsx'
+import FoodLoggerSheet from '../components/FoodLoggerSheet.jsx'
 import { copyRoutine, deleteRoutine, restoreRoutine, routineSnapshot } from '../lib/routines.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -32,7 +35,10 @@ import {
 // lives in this browser's storage and not in S.
 export const PLAN_VIEW_KEY = 'gym_plan_view'
 const readView = () => {
-  try { return localStorage.getItem(PLAN_VIEW_KEY) === 'routines' ? 'routines' : 'schedule' } catch { return 'schedule' }
+  try {
+    const v = localStorage.getItem(PLAN_VIEW_KEY)
+    return v === 'routines' || v === 'nutrition' ? v : 'schedule'
+  } catch { return 'schedule' }
 }
 
 /* Undo for Plan's two removals (v1.3.11). Both go through the store's normal update, so sync
@@ -129,6 +135,8 @@ export default function Plan() {
   const coachMode = useStore(s => s.coachLocal?.mode)
   const user = useStore(s => s.user)
   const fileRef = useRef(null)
+  const [showWizard, setShowWizard] = useState(false)
+  const [showFoodLogger, setShowFoodLogger] = useState(false)
   const [view, setViewState] = useState(readView)
   const setView = v => {
     setViewState(v)
@@ -170,10 +178,18 @@ export default function Plan() {
     </div>
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
     <Segmented className="plan-views" value={view} onChange={setView}
-      options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
+      options={[
+        { value: 'schedule', label: t('Schedule') },
+        { value: 'routines', label: t('Routines') },
+        { value: 'nutrition', label: t('Nutrition') },
+      ]} />
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />
+      : view === 'nutrition'
+      ? <PlanNutrition S={S} onOpenWizard={() => setShowWizard(true)} onOpenLog={() => setShowFoodLogger(true)} />
       : <Schedule S={S} update={update} nav={nav} mode={mode} />}
+    <NutritionWizardModal open={showWizard} onClose={() => setShowWizard(false)} />
+    <FoodLoggerSheet open={showFoodLogger} onClose={() => setShowFoodLogger(false)} />
   </div>
 }
 
