@@ -71,9 +71,10 @@ export async function fetchBarcodeFromOpenFoodFacts(barcode) {
 }
 
 export function buildWizardPrompt(profile = {}) {
-  const { weightKg, heightCm, age, gender, activityLevel, goal, diet, weeklyWorkouts } = profile;
+  const { weightKg, targetWeightKg, heightCm, age, gender, activityLevel, goal, diet, weeklyWorkouts } = profile;
   return `You are an elite sports nutritionist. Calculate daily caloric needs and macronutrient distribution for the following profile:
-- Weight: ${weightKg || 70} kg
+- Current Weight: ${weightKg || 70} kg
+${targetWeightKg ? `- Target Weight: ${targetWeightKg} kg` : ''}
 - Height: ${heightCm || 170} cm
 - Age: ${age || 25} years
 - Biological Sex: ${gender || 'male'}
@@ -90,7 +91,7 @@ Return ONLY a valid JSON object in this exact schema without any markdown format
   "protein": <number, grams of protein per day>,
   "carbs": <number, grams of carbs per day>,
   "fat": <number, grams of fat per day>,
-  "reasoning": "<short explanation in English of the strategy and macro split in 2-3 sentences>"
+  "reasoning": "<short explanation in English of the strategy, timeline to target weight, and macro split in 2-3 sentences>"
 }`;
 }
 
@@ -251,6 +252,13 @@ export function nutritionRoutes({ json, readBody, readSession }) {
         const protein = Math.round(w * 2.0);
         const fat = Math.round((calories * 0.25) / 9);
         const carbs = Math.max(0, Math.round((calories - (protein * 4 + fat * 9)) / 4));
+        const tgtW = Number(profile.targetWeightKg) || null;
+        let timelineText = '';
+        if (tgtW && Math.abs(tgtW - w) >= 0.5) {
+          const diff = Math.abs(tgtW - w);
+          const weeks = Math.max(1, Math.round(diff / 0.4));
+          timelineText = ` Aiming for ${tgtW} kg in approximately ${weeks} weeks.`;
+        }
         return json(res, 200, {
           ok: true,
           data: {
@@ -260,7 +268,7 @@ export function nutritionRoutes({ json, readBody, readSession }) {
             protein,
             carbs,
             fat,
-            reasoning: `Target calculated using the standard Mifflin-St Jeor formula adjusted for ${profile.goal || 'maintain'} goal (${calories} kcal).`
+            reasoning: `Target calculated using the standard Mifflin-St Jeor formula adjusted for ${profile.goal || 'maintain'} goal (${calories} kcal).${timelineText}`
           }
         });
       }

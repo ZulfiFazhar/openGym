@@ -29,6 +29,10 @@ export async function fetchWizardTarget(profile) {
 
   // Fallback to offline MSJ formula
   const local = calculateMifflinStJeor(profile);
+  let reasoning = 'Recommendation calculated using the offline standard Mifflin-St Jeor formula.';
+  if (local.timeline) {
+    reasoning += ` Target: ${profile.targetWeightKg} kg (~${local.timeline.estimatedWeeks} weeks projected).`;
+  }
   return {
     bmr: local.bmr,
     tdee: local.tdee,
@@ -36,7 +40,8 @@ export async function fetchWizardTarget(profile) {
     protein: local.protein,
     carbs: local.carbs,
     fat: local.fat,
-    reasoning: 'Recommendation calculated using the offline standard Mifflin-St Jeor formula.'
+    timeline: local.timeline,
+    reasoning
   };
 }
 

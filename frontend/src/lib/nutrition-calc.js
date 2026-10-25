@@ -17,8 +17,24 @@ export function calculateMacros({ weightKg, calories, proteinMultiplier = 2.0, f
   return { protein, carbs, fat };
 }
 
+export function estimateTargetTimeline({ currentWeightKg, targetWeightKg, goal, adjustmentCalories = 400 }) {
+  const cur = Number(currentWeightKg) || 0;
+  const tgt = Number(targetWeightKg) || 0;
+  if (!tgt || !cur || Math.abs(cur - tgt) < 0.2) return null;
+  const diffKg = Math.abs(cur - tgt);
+  const dailyDiff = Math.abs(adjustmentCalories) || 400;
+  const weeklyKg = (dailyDiff * 7) / 7700;
+  const weeks = Math.max(1, Math.round(diffKg / weeklyKg));
+  return {
+    diffKg: Number(diffKg.toFixed(1)),
+    estimatedWeeks: weeks,
+    direction: tgt < cur ? 'lose' : 'gain'
+  };
+}
+
 export function calculateMifflinStJeor({
   weightKg = 70,
+  targetWeightKg = null,
   heightCm = 170,
   age = 25,
   gender = 'male',
@@ -26,6 +42,7 @@ export function calculateMifflinStJeor({
   goal = 'maintain'
 }) {
   const w = Math.max(30, Math.min(300, Number(weightKg) || 70));
+  const tgtW = targetWeightKg ? Math.max(30, Math.min(300, Number(targetWeightKg))) : null;
   const h = Math.max(100, Math.min(250, Number(heightCm) || 170));
   const a = Math.max(12, Math.min(100, Number(age) || 25));
   const isMale = String(gender).toLowerCase() === 'male';
@@ -44,11 +61,13 @@ export function calculateMifflinStJeor({
 
   const targetCalories = Math.max(1200, tdee + adjustment);
   const macros = calculateMacros({ weightKg: w, calories: targetCalories });
+  const timeline = tgtW ? estimateTargetTimeline({ currentWeightKg: w, targetWeightKg: tgtW, goal, adjustmentCalories: adjustment }) : null;
 
   return {
     bmr,
     tdee,
     targetCalories,
+    timeline,
     ...macros
   };
 }

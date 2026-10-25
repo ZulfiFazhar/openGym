@@ -11,19 +11,41 @@ export default function NutritionWizardModal({ open, onClose }) {
 
   // Pre-fill from existing store data if present
   const latestWeight = S.bodyweight && S.bodyweight.length ? S.bodyweight[S.bodyweight.length - 1].w : 70
+  const initialTargetW = S.targetW != null ? Number(S.targetW) : ''
 
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [profile, setProfile] = useState({
-    weightKg: latestWeight || 70,
-    heightCm: 170,
-    age: 25,
-    gender: S.body === 'female' ? 'female' : 'male',
-    activityLevel: 'moderate',
-    weeklyWorkouts: 4,
-    goal: 'maintain',
-    diet: ''
+  const [profile, setProfile] = useState(() => {
+    const curW = latestWeight || 70
+    const tgtW = initialTargetW !== '' ? Number(initialTargetW) : null
+    let autoGoal = 'maintain'
+    if (tgtW) {
+      if (tgtW < curW - 0.3) autoGoal = 'cut'
+      else if (tgtW > curW + 0.3) autoGoal = 'bulk'
+    }
+    return {
+      weightKg: curW,
+      targetWeightKg: tgtW !== null ? tgtW : '',
+      heightCm: 170,
+      age: 25,
+      gender: S.body === 'female' ? 'female' : 'male',
+      activityLevel: 'moderate',
+      weeklyWorkouts: 4,
+      goal: autoGoal,
+      diet: ''
+    }
   })
+
+  const updateTargetWeight = val => {
+    const parsed = val === '' ? '' : Number(val)
+    let autoGoal = profile.goal
+    if (parsed !== '') {
+      if (parsed < profile.weightKg - 0.3) autoGoal = 'cut'
+      else if (parsed > profile.weightKg + 0.3) autoGoal = 'bulk'
+      else autoGoal = 'maintain'
+    }
+    setProfile(p => ({ ...p, targetWeightKg: parsed, goal: autoGoal }))
+  }
 
   const [result, setResult] = useState(null)
 
@@ -117,11 +139,18 @@ export default function NutritionWizardModal({ open, onClose }) {
 
   const handleApply = () => {
     if (!result) return
+    const tgtW = profile.targetWeightKg !== '' ? Number(profile.targetWeightKg) : null
+    if (tgtW !== null && !isNaN(tgtW)) {
+      useStore.getState().update(s => {
+        s.targetW = tgtW
+      })
+    }
     setNutritionTarget({
       calories: result.calories,
       protein: result.protein,
       carbs: result.carbs,
       fat: result.fat,
+      strategy: profile.goal,
       source: 'wizard',
       profile: { ...profile }
     })
@@ -163,7 +192,7 @@ export default function NutritionWizardModal({ open, onClose }) {
 
               <div className="wiz-grid-2">
                 <div className="wiz-field">
-                  <label>Body Weight (kg)</label>
+                  <label>Current Weight (kg)</label>
                   <input
                     type="number"
                     value={profile.weightKg}
@@ -171,6 +200,22 @@ export default function NutritionWizardModal({ open, onClose }) {
                     min="30" max="300"
                   />
                 </div>
+                <div className="wiz-field">
+                  <label>Target Weight (kg)</label>
+                  <input
+                    name="targetWeightKg"
+                    id="targetWeightKg"
+                    data-field="targetWeight"
+                    type="number"
+                    placeholder="e.g. 70"
+                    value={profile.targetWeightKg}
+                    onChange={e => updateTargetWeight(e.target.value)}
+                    min="30" max="300"
+                  />
+                </div>
+              </div>
+
+              <div className="wiz-grid-2">
                 <div className="wiz-field">
                   <label>Height (cm)</label>
                   <input
@@ -180,9 +225,6 @@ export default function NutritionWizardModal({ open, onClose }) {
                     min="100" max="250"
                   />
                 </div>
-              </div>
-
-              <div className="wiz-grid-2">
                 <div className="wiz-field">
                   <label>Age (years)</label>
                   <input
@@ -192,16 +234,17 @@ export default function NutritionWizardModal({ open, onClose }) {
                     min="12" max="100"
                   />
                 </div>
-                <div className="wiz-field">
-                  <label>Biological Sex</label>
-                  <select
-                    value={profile.gender}
-                    onChange={e => setProfile({ ...profile, gender: e.target.value })}
-                  >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
+              </div>
+
+              <div className="wiz-field">
+                <label>Biological Sex</label>
+                <select
+                  value={profile.gender}
+                  onChange={e => setProfile({ ...profile, gender: e.target.value })}
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
               </div>
             </>
           )}
@@ -257,6 +300,24 @@ export default function NutritionWizardModal({ open, onClose }) {
             <>
               <div className="wiz-step-badge">Step 3/5 • Fitness Goal</div>
               <div className="wiz-step-desc">Choose your fitness goal so AI can determine the right calorie deficit or surplus.</div>
+
+              {profile.targetWeightKg !== '' && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px', borderRadius: 10,
+                  background: 'var(--acc-soft)', color: 'var(--acc)',
+                  fontSize: 12, fontWeight: 600, marginBottom: 10
+                }}>
+                  <Icon name="target" size={16} />
+                  <span>
+                    {profile.goal === 'cut'
+                      ? `Recommended: Cutting (${profile.weightKg} kg to ${profile.targetWeightKg} kg)`
+                      : profile.goal === 'bulk'
+                      ? `Recommended: Bulking (${profile.weightKg} kg to ${profile.targetWeightKg} kg)`
+                      : `Recommended: Maintenance (${profile.weightKg} kg)`}
+                  </span>
+                </div>
+              )}
 
               <div
                 className={`wiz-option-card ${profile.goal === 'cut' ? 'selected' : ''}`}
@@ -358,6 +419,23 @@ export default function NutritionWizardModal({ open, onClose }) {
                   {result.reasoning && (
                     <div className="wiz-ai-note">
                       "{result.reasoning}"
+                    </div>
+                  )}
+
+                  {profile.targetWeightKg !== '' && Number(profile.targetWeightKg) !== profile.weightKg && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      marginTop: 10, padding: '8px 12px', borderRadius: 10,
+                      background: 'rgba(255,255,255,0.05)', fontSize: 13,
+                      color: 'rgba(255,255,255,0.9)'
+                    }}>
+                      <Icon name="target" size={16} style={{ color: 'var(--acc)' }} />
+                      <span>
+                        Target: {profile.targetWeightKg} kg (
+                        {Math.abs(Number(profile.targetWeightKg) - profile.weightKg).toFixed(1)} kg {Number(profile.targetWeightKg) < profile.weightKg ? 'to lose' : 'to gain'}
+                        {result.timeline?.estimatedWeeks ? `, ~${result.timeline.estimatedWeeks} weeks projected` : ''}
+                        )
+                      </span>
                     </div>
                   )}
                 </div>

@@ -56,4 +56,96 @@ describe('NutritionWizardModal', () => {
     act(() => { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })) })
     expect(closedCount).toBe(2)
   })
+
+  it('pre-fills target weight from S.targetW and renders target weight field in step 1', () => {
+    useStore.setState({
+      S: {
+        ...JSON.parse(JSON.stringify(DEF)),
+        bodyweight: [{ d: '2026-10-25', w: 75 }],
+        targetW: 68
+      },
+      user: { id: 1 }
+    })
+
+    act(() => { root.render(<NutritionWizardModal open={true} onClose={() => {}} />) })
+
+    const targetInput = host.querySelector('input[name="targetWeightKg"], input#targetWeightKg, input[data-field="targetWeight"]')
+    expect(targetInput).toBeTruthy()
+    expect(Number(targetInput.value)).toBe(68)
+  })
+
+  it('auto-selects Cutting goal when targetW is lower than current weight and shows recommendation', () => {
+    useStore.setState({
+      S: {
+        ...JSON.parse(JSON.stringify(DEF)),
+        bodyweight: [{ d: '2026-10-25', w: 75 }],
+        targetW: 68
+      },
+      user: { id: 1 }
+    })
+
+    act(() => { root.render(<NutritionWizardModal open={true} onClose={() => {}} />) })
+
+    // Step 1 -> 2 -> 3
+    for (let i = 0; i < 2; i++) {
+      const nextBtn = host.querySelector('.wiz-btn-next')
+      act(() => { nextBtn.click() })
+    }
+
+    expect(host.textContent).toContain('Step 3/5')
+    expect(host.textContent).toContain('Recommended: Cutting (75 kg to 68 kg)')
+    const cutCard = host.querySelector('.wiz-option-card.selected')
+    expect(cutCard).toBeTruthy()
+    expect(cutCard.textContent).toContain('Cutting')
+  })
+
+  it('syncs updated target weight to S.targetW on apply and uses no emojis', async () => {
+    useStore.setState({
+      S: {
+        ...JSON.parse(JSON.stringify(DEF)),
+        bodyweight: [{ d: '2026-10-25', w: 75 }],
+        targetW: null
+      },
+      user: { id: 1 }
+    })
+
+    act(() => { root.render(<NutritionWizardModal open={true} onClose={() => {}} />) })
+
+    // Fill target weight in step 1
+    const targetInput = host.querySelector('input[name="targetWeightKg"]')
+    expect(targetInput).toBeTruthy()
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+      setter.call(targetInput, '70')
+      targetInput.dispatchEvent(new Event('input', { bubbles: true }))
+      targetInput.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    // Advance 1 -> 2 -> 3 -> 4
+    for (let i = 0; i < 3; i++) {
+      const nextBtn = host.querySelector('.wiz-btn-next')
+      expect(nextBtn).toBeTruthy()
+      act(() => { nextBtn.click() })
+    }
+
+    // Step 4 -> 5 (triggers async calculation)
+    const calcBtn = host.querySelector('.wiz-btn-next')
+    expect(calcBtn).toBeTruthy()
+    await act(async () => {
+      calcBtn.click()
+      await new Promise(r => setTimeout(r, 50))
+    })
+
+    // On step 5 (results), check apply
+    const applyBtn = host.querySelector('.wiz-btn-apply')
+    expect(applyBtn).toBeTruthy()
+    expect(applyBtn.disabled).toBe(false)
+    act(() => { applyBtn.click() })
+
+    expect(useStore.getState().S.targetW).toBe(70)
+
+    // Verify no emojis in rendered text
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u
+    expect(emojiRegex.test(host.textContent)).toBe(false)
+  })
 })
