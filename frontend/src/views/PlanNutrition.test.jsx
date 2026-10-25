@@ -73,4 +73,18 @@ describe('PlanNutrition', () => {
     act(() => { btn.click() })
     expect(wizardOpened).toBe(true)
   })
+
+  it('renders "Adjust with AI Wizard" button below the header title in a dedicated action row', () => {
+    act(() => {
+      root.render(<PlanNutrition S={useStore.getState().S} onOpenWizard={() => {}} onOpenLog={() => {}} />)
+    })
+    const card = host.querySelector('.card')
+    const headerTitle = card.querySelector('.plan-nutrition-header')
+    expect(headerTitle).toBeTruthy()
+    expect(headerTitle.querySelector('button')).toBeNull()
+
+    const actionsRow = card.querySelector('.plan-nutrition-actions')
+    expect(actionsRow).toBeTruthy()
+    expect(actionsRow.textContent).toContain('Adjust with AI Wizard')
+  })
 })

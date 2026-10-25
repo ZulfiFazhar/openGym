@@ -45,19 +45,26 @@ export default function PlanNutrition({ S, onOpenWizard, onOpenLog }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Target Overview Card */}
       <div className="card">
-        <div className="row between" style={{ alignItems: 'flex-start', marginBottom: 12 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-              <Icon name="sparkles" size={16} style={{ color: 'var(--acc)' }} />
-              <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--acc)' }}>
-                {target.strategy ? target.strategy.toUpperCase() : 'DAILY TARGET'}
-              </span>
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.03em' }}>
-              {fmt(targetCal)} <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--label-2, rgba(255,255,255,0.6))' }}>kcal / day</span>
-            </div>
+        <div className="plan-nutrition-header" style={{ marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Icon name="sparkles" size={16} style={{ color: 'var(--acc)' }} />
+            <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--acc)' }}>
+              {target.strategy ? target.strategy.toUpperCase() : 'DAILY TARGET'}
+            </span>
           </div>
-          <Button size="sm" variant="tinted" icon="sparkles" onClick={onOpenWizard}>
+          <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.03em' }}>
+            {fmt(targetCal)} <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--label-2, rgba(255,255,255,0.6))' }}>kcal / day</span>
+          </div>
+        </div>
+
+        <div className="plan-nutrition-actions" style={{ marginBottom: 14 }}>
+          <Button
+            size="sm"
+            variant="tinted"
+            icon="sparkles"
+            onClick={onOpenWizard}
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
             {t('Adjust with AI Wizard')}
           </Button>
         </div>
