@@ -1208,22 +1208,24 @@ export function useLiquidGlass(options, rootRef) {
       />
       {map ? (
         <React.Fragment>
-          <span
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: -1,
-              borderRadius: 'inherit',
-              overflow: 'hidden',
-              pointerEvents: 'none',
-              backgroundImage: map.overlay ? `url(${map.overlay})` : 'none',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              transform: fluidTransform,
-              transformOrigin: '0 0',
-            }}
-          />
+          {refracting ? (
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: -1,
+                borderRadius: 'inherit',
+                overflow: 'hidden',
+                pointerEvents: 'none',
+                backgroundImage: map.overlay ? `url(${map.overlay})` : 'none',
+                backgroundSize: '100% 100%',
+                backgroundRepeat: 'no-repeat',
+                transform: fluidTransform,
+                transformOrigin: '0 0',
+              }}
+            />
+          ) : null}
           {!refracting ? (
             <span
               aria-hidden="true"
@@ -1243,12 +1245,8 @@ export function useLiquidGlass(options, rootRef) {
                     : dark
                       ? 'rgba(18, 22, 30, 0.72)'
                       : 'rgba(255, 255, 255, 0.78)',
-                border: dark
-                  ? '1px solid rgba(255, 255, 255, 0.12)'
-                  : '1px solid rgba(0, 0, 0, 0.08)',
-                boxShadow: dark
-                  ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.18)'
-                  : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.8)',
+                border: 'none',
+                boxShadow: 'none',
               }}
             />
           ) : null}

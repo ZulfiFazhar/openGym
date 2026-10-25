@@ -76,23 +76,40 @@ describe('LiquidGlass component', () => {
     }
   })
 
-  it('renders webkit/iOS frosted glass without clipPath bug and with proper frosted backdrop layer', () => {
-    act(() => {
-      root.render(
-        <LiquidGlass mode="frost" appearance="dark" material="clear" data-testid="ios-glass">
-          <span>iOS Glass</span>
-        </LiquidGlass>
-      )
-    })
+  it('renders webkit/iOS frosted glass without clipPath bug and without border strokes (pure glassmorphism)', () => {
+    const origWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')
+    const origHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetHeight')
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 390 })
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 58 })
 
-    const el = host.querySelector('[data-testid="ios-glass"]')
-    expect(el).not.toBeNull()
-    expect(el.getAttribute('data-liquid-glass')).toBe('frost')
+    try {
+      act(() => {
+        root.render(
+          <LiquidGlass mode="frost" appearance="dark" material="clear" data-testid="ios-glass">
+            <span>iOS Glass</span>
+          </LiquidGlass>
+        )
+      })
 
-    // Lens element must not have clip-path in frost mode to avoid breaking WebKit backdrop-filter
-    const lens = el.querySelector('span[aria-hidden="true"]')
-    expect(lens).not.toBeNull()
-    expect(lens.style.clipPath).toBeFalsy()
-    expect(lens.style.backdropFilter).toContain('blur')
+      const el = host.querySelector('[data-testid="ios-glass"]')
+      expect(el).not.toBeNull()
+      expect(el.getAttribute('data-liquid-glass')).toBe('frost')
+
+      const spans = el.querySelectorAll('span[aria-hidden="true"]')
+      expect(spans.length).toBeGreaterThan(1)
+      const lens = spans[0]
+      expect(lens.style.clipPath).toBeFalsy()
+      expect(lens.style.backdropFilter).toContain('blur')
+
+      // Pure glassmorphism on iOS without border stroke or stroke overlay
+      spans.forEach((s) => {
+        expect(s.style.border || 'none').toMatch(/^(none|0px)?(\s*(none|0px))*$/)
+        expect(s.style.backgroundImage || 'none').not.toContain('data:image')
+        expect(s.style.boxShadow || 'none').not.toContain('inset')
+      })
+    } finally {
+      if (origWidth) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', origWidth)
+      if (origHeight) Object.defineProperty(HTMLElement.prototype, 'offsetHeight', origHeight)
+    }
   })
 })
