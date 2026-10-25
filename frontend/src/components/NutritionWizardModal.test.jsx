@@ -33,4 +33,27 @@ describe('NutritionWizardModal', () => {
     expect(host.textContent).toContain('2/5')
     expect(host.textContent).toContain('Activity')
   })
+
+  it('renders grab handle and no "x" close button, matching standard drawer design', () => {
+    let closed = false
+    act(() => { root.render(<NutritionWizardModal open={true} onClose={() => { closed = true }} />) })
+    const grab = host.querySelector('.grab')
+    expect(grab).toBeTruthy()
+    expect(host.querySelector('.wiz-close')).toBeNull()
+
+    act(() => { grab.click() })
+    expect(closed).toBe(true)
+  })
+
+  it('closes on backdrop click and Escape key', () => {
+    let closedCount = 0
+    act(() => { root.render(<NutritionWizardModal open={true} onClose={() => { closedCount++ }} />) })
+    const mback = host.querySelector('.mback')
+    expect(mback).toBeTruthy()
+    act(() => { mback.click() })
+    expect(closedCount).toBe(1)
+
+    act(() => { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })) })
+    expect(closedCount).toBe(2)
+  })
 })

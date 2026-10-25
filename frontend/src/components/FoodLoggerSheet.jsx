@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useStore } from '../store/useStore.js'
 import { fetchBarcodeNutrition, analyzeFood } from '../lib/nutrition-api.js'
 import Icon from './Icon.jsx'
@@ -25,6 +25,58 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
   const [reviewItem, setReviewItem] = useState(null)
   const [selectedMeal, setSelectedMeal] = useState('lunch')
   const [statusMessage, setStatusMessage] = useState('')
+
+  const sheetRef = useRef(null)
+  const drag = useRef({ startY: null, startX: null, delta: 0, lastY: 0, lastT: 0, vy: 0, axis: null })
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  const onTouchStart = e => {
+    const t = e.touches[0]
+    if (e.target.closest('input, textarea, select, button, label, .scanner-box')) return
+    drag.current = { startY: t.clientY, startX: t.clientX, delta: 0, lastY: t.clientY, lastT: performance.now(), vy: 0, axis: null }
+  }
+
+  const onTouchMove = e => {
+    const el = sheetRef.current, d = drag.current
+    if (d.startY === null || !el) return
+    const t = e.touches[0]
+    const dx = t.clientX - d.startX, dy = t.clientY - d.startY
+    if (d.axis === null) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? 'y' : 'x'
+    }
+    if (d.axis === 'x') return
+    const now = performance.now()
+    if (now > d.lastT) { d.vy = (t.clientY - d.lastY) / (now - d.lastT); d.lastY = t.clientY; d.lastT = now }
+    if (dy > 0 && el.scrollTop <= 0) {
+      d.delta = dy
+      el.style.transition = 'none'
+      el.style.transform = `translateY(${dy}px)`
+    } else if (d.delta > 0) {
+      d.delta = 0
+      el.style.transform = 'translateY(0px)'
+    }
+  }
+
+  const onTouchEnd = () => {
+    const el = sheetRef.current, d = drag.current
+    if (d.startY === null || !el) return
+    el.style.transition = 'transform .2s'
+    const flick = d.delta > 30 && d.vy > 0.6
+    if (d.delta > 80 || flick) {
+      el.style.transform = 'translateY(110%)'
+      setTimeout(onClose, 180)
+    } else {
+      el.style.transform = ''
+    }
+    drag.current = { startY: null, startX: null, delta: 0, lastY: 0, lastT: 0, vy: 0, axis: null }
+  }
 
   if (!open) return null
 
@@ -151,12 +203,24 @@ export default function FoodLoggerSheet({ open, onClose, date }) {
   }
 
   return (
-    <div className="food-sheet-overlay" onClick={onClose}>
-      <div className="food-sheet" onClick={e => e.stopPropagation()}>
-        <div className="food-sheet-header">
-          <div className="food-sheet-title">Log Food • {today}</div>
-          <button className="food-sheet-close" onClick={onClose}>×</button>
-        </div>
+    <div className="food-sheet-overlay">
+      <div className="mback" onClick={onClose} />
+      <div
+        className="sheet food-sheet"
+        ref={sheetRef}
+        onClick={e => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div
+          className="grab"
+          onClick={onClose}
+          role="button"
+          tabIndex={0}
+          aria-label="Close drawer"
+        />
+        <h3 className="food-sheet-title">Log Food • {today}</h3>
 
         <div className="food-sheet-body">
           {/* Quick Stats Summary */}
