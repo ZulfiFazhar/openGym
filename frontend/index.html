@@ -27,8 +27,83 @@
 <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-180.png">
+<style>
+  #app-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0c0e12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #app-splash.splash-fade-out {
+    opacity: 0;
+    transform: scale(1.04);
+    pointer-events: none;
+  }
+  .splash-logo-wrap {
+    animation: splash-pulse 2s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .splash-logo {
+    width: 88px;
+    height: 88px;
+    filter: drop-shadow(0 0 24px rgba(163, 230, 53, 0.25));
+  }
+  .splash-loader {
+    width: 64px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 28px;
+  }
+  .splash-loader-bar {
+    width: 40%;
+    height: 100%;
+    background: #a3e635;
+    border-radius: 999px;
+    position: absolute;
+    animation: splash-load 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes splash-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.92; }
+    50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 28px rgba(163, 230, 53, 0.4)); }
+  }
+  @keyframes splash-load {
+    0% { left: -40%; width: 30%; }
+    50% { left: 35%; width: 50%; }
+    100% { left: 100%; width: 30%; }
+  }
+</style>
 </head>
 <body>
+<div id="app-splash" aria-hidden="true">
+  <div class="splash-logo-wrap">
+    <svg class="splash-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="112" fill="#14171f" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+      <g fill="#a3e635">
+        <rect x="80" y="242" width="352" height="28" rx="4"/>
+        <rect x="80" y="199" width="36" height="114" rx="6"/>
+        <rect x="131" y="169" width="47" height="174" rx="8"/>
+        <rect x="334" y="169" width="47" height="174" rx="8"/>
+        <rect x="396" y="199" width="36" height="114" rx="6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="splash-loader">
+    <div class="splash-loader-bar"></div>
+  </div>
+</div>
 <div id="root"></div>
 <script type="module" src="/src/main.jsx"></script>
 </body>
