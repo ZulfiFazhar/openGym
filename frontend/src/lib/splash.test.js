@@ -26,10 +26,28 @@ describe('dismissSplash', () => {
   })
 
   it('removes the splash element from DOM after fade-out completes', () => {
-    dismissSplash(500)
+    dismissSplash(500, 600)
     expect(document.getElementById('app-splash')).toBeTruthy()
 
-    vi.advanceTimersByTime(500 + 400)
+    vi.advanceTimersByTime(500 + 600)
+    expect(document.getElementById('app-splash')).toBeNull()
+  })
+
+  it('uses default delays of 1100ms minDelay and 650ms fadeDuration', () => {
+    dismissSplash()
+    const el = document.getElementById('app-splash')
+    expect(el.classList.contains('splash-fade-out')).toBe(false)
+
+    vi.advanceTimersByTime(1099)
+    expect(el.classList.contains('splash-fade-out')).toBe(false)
+
+    vi.advanceTimersByTime(1)
+    expect(el.classList.contains('splash-fade-out')).toBe(true)
+
+    vi.advanceTimersByTime(649)
+    expect(document.getElementById('app-splash')).toBeTruthy()
+
+    vi.advanceTimersByTime(1)
     expect(document.getElementById('app-splash')).toBeNull()
   })
 
