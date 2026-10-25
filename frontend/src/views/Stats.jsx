@@ -27,6 +27,9 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import StatsNutrition from './StatsNutrition.jsx'
+import NutritionWizardModal from '../components/NutritionWizardModal.jsx'
+import FoodLoggerSheet from '../components/FoodLoggerSheet.jsx'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -407,6 +410,9 @@ export function WeeklyPlanVolume({ S }) {
 export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
+  const [tab, setTab] = useState('training')
+  const [showWizard, setShowWizard] = useState(false)
+  const [showFoodLogger, setShowFoodLogger] = useState(false)
   const [range, setRange] = useState(90)
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume). The router is a
   // HashRouter, so the query sits in the hash; the scroll waits a frame for the page's own
@@ -633,10 +639,28 @@ export default function Stats() {
   if (showMax) exOpts.push({ value: 'max', label: t('Max reps') })
 
   return <>
-    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{tab === 'nutrition' ? t('Nutrition & energy intake') : t('Progress & history')}</div></div>
       <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button></div>
 
-    <div className="tiles">
+    <Segmented
+      className="stats-views"
+      value={tab}
+      onChange={setTab}
+      options={[
+        { value: 'training', label: t('Training') },
+        { value: 'nutrition', label: t('Nutrition') },
+      ]}
+    />
+
+    {tab === 'nutrition' ? (
+      <StatsNutrition
+        S={S}
+        onOpenWizard={() => setShowWizard(true)}
+        onOpenLog={() => setShowFoodLogger(true)}
+      />
+    ) : (
+      <>
+        <div className="tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l"><Icon name="calendar" />{t('This month')}</div><div className="v">{monthW}</div></div>
       <div className="tile"><div className="l"><Icon name="flame" />{t('Week streak')}</div><div className="v">{streakWeeks(S)}</div></div>
@@ -752,5 +776,10 @@ export default function Stats() {
       </div>
       <div className="list">{[...workouts].reverse().slice(0, 6).map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
     </>}
+      </>
+    )}
+
+    <NutritionWizardModal open={showWizard} onClose={() => setShowWizard(false)} />
+    <FoodLoggerSheet open={showFoodLogger} onClose={() => setShowFoodLogger(false)} />
   </>
 }
