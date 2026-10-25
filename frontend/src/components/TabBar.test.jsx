@@ -59,6 +59,16 @@ describe('the tab bar across a store write', () => {
     expect(tabs()[4].className).toBe('start rec')
     expect(tabs()[0].className).toBe('on')
   })
+
+  it('renders tab pill and start button with Apple Tahoe liquid glass attributes', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(pill).not.toBeNull()
+    expect(pill.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
+  })
 })
 
 // Settings → "Show connection status" off (#369, #330): a stuck sync shows as a dot on Home, the
@@ -117,7 +127,7 @@ describe('the tab icons and labels', () => {
 })
 
 describe('dock navigation styling', () => {
-  it('uses clean transparent blur without liquid glass reflections or high saturation', async () => {
+  it('uses Apple Tahoe liquid glass architecture without legacy CSS gradient hacks', async () => {
     const fs = await import('node:fs')
     const path = await import('node:path')
     const cssPath = path.resolve(__dirname, '../index.css')
@@ -127,14 +137,13 @@ describe('dock navigation styling', () => {
     expect(pillMatch).toBeTruthy()
     const pillRules = pillMatch[1]
 
-    // Liquid glass removed
+    // Legacy CSS liquid glass hacks removed
     expect(pillRules).not.toContain('saturate(190%)')
     expect(pillRules).not.toContain('inset 0 1px 1px')
     expect(pillRules).not.toContain('linear-gradient')
 
-    // Clean transparent blur present
-    expect(pillRules).toMatch(/backdrop-filter:blur\(20px\)/)
-    expect(pillRules).toMatch(/background:rgba\(18,\s*21,\s*28,\s*0\.75\)/)
+    // Clean transparent background for liquid glass lens
+    expect(pillRules).toContain('background:transparent')
 
     const startMatch = css.match(/#tabbar button\.start\{([^}]+)\}/)
     expect(startMatch).toBeTruthy()
@@ -142,6 +151,6 @@ describe('dock navigation styling', () => {
     expect(startRules).not.toContain('saturate(190%)')
     expect(startRules).not.toContain('inset 0 1px 1px')
     expect(startRules).not.toContain('linear-gradient')
-    expect(startRules).toMatch(/backdrop-filter:blur\(20px\)/)
+    expect(startRules).toContain('background:transparent')
   })
 })

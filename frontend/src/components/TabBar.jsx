@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
+import { LiquidGlass, LiquidGlassButton } from './ui/LiquidGlass.jsx'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -43,21 +44,41 @@ export default function TabBar({ onStart }) {
     nav('/workout')
   }
 
+  const isLight = (typeof document !== 'undefined' && document.documentElement?.dataset?.theme === 'light') || S.theme === 'light'
+  const appearance = isLight ? 'light' : 'dark'
+
   return (
     <nav id="tabbar">
-      <div className="tab-pill" data-active={activeIdx} style={{ '--active-idx': activeIdx }}>
+      <LiquidGlass
+        className="tab-pill"
+        appearance={appearance}
+        material="clear"
+        refraction={22}
+        bezel={26}
+        blur={1.5}
+        data-active={activeIdx}
+        style={{ '--active-idx': activeIdx }}
+      >
         <div className="tab-pill-indicator" aria-hidden="true" />
         <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
         <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
         <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
         <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
-      </div>
-      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
-        aria-label={running ? t('Resume') : undefined}>
+      </LiquidGlass>
+      <LiquidGlassButton
+        interactive
+        appearance={appearance}
+        material="clear"
+        refraction={18}
+        bezel={24}
+        className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
+        onClick={startWorkout}
+        aria-label={running ? t('Resume') : undefined}
+      >
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span className="tab-label">{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
-      </button>
+      </LiquidGlassButton>
     </nav>
   )
 }
