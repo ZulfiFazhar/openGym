@@ -40,10 +40,31 @@ const useIsoLayoutEffect =
 
 let detectedEngine = null
 
-export function detectEngine() {
-  if (detectedEngine) return detectedEngine
-  if (typeof navigator === 'undefined') return 'webkit'
+export function isIOS() {
+  if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent || ''
+  const isAppleMobile = /iPad|iPhone|iPod/.test(ua)
+  const isIPadOS = /Macintosh/.test(ua) && typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 1
+  return isAppleMobile || isIPadOS
+}
+
+export function detectEngine(forceRefresh = false) {
+  if (!forceRefresh && detectedEngine) return detectedEngine
+  if (typeof navigator === 'undefined') return 'webkit'
+
+  // Every browser on iOS (Chrome CriOS, Safari, Firefox FxiOS, Edge EdgiOS) uses WebKit.
+  // WebKit does not support SVG displacement maps in backdrop-filter.
+  if (isIOS()) {
+    detectedEngine = 'webkit'
+    return detectedEngine
+  }
+
+  const ua = navigator.userAgent || ''
+  if (/CriOS|FxiOS|EdgiOS/.test(ua)) {
+    detectedEngine = 'webkit'
+    return detectedEngine
+  }
+
   if (/Firefox\//.test(ua)) {
     detectedEngine = 'gecko'
     return detectedEngine
@@ -64,9 +85,9 @@ export function detectEngine() {
 
 let detectedMode = null
 
-function detectMode() {
-  if (detectedMode) return detectedMode
-  detectedMode = detectEngine() === 'chromium' ? 'refract' : 'frost'
+export function detectMode(forceRefresh = false) {
+  if (!forceRefresh && detectedMode) return detectedMode
+  detectedMode = detectEngine(forceRefresh) === 'chromium' ? 'refract' : 'frost'
   return detectedMode
 }
 
@@ -433,6 +454,7 @@ function outlineField(px, py, outline) {
 }
 
 function resolveRadius(value, w, h) {
+  if (value === 'inherit' || !value) return Math.min(w, h) / 2
   const n = parseFloat(value)
   if (!Number.isFinite(n)) return 0
   const r = typeof value === 'string' && value.trim().endsWith('%') ? (n / 100) * Math.min(w, h) : n
@@ -985,7 +1007,7 @@ export function useLiquidGlass(options, rootRef) {
     saturation = 1.2,
     brightness = 1.05,
     dispersion = 0,
-    fallbackBlur = 10,
+    fallbackBlur = 20,
     mode: requestedMode = 'auto',
     interactive = false,
     motion,
@@ -1082,9 +1104,16 @@ export function useLiquidGlass(options, rootRef) {
       const h = Math.round(lens.offsetHeight || element.offsetHeight || 0)
       if (w < 2 || h < 2) return
       setElementSize((prev) => (prev && prev.w === w && prev.h === h ? prev : { w, h }))
-      const radius = Math.round(
-        resolveRadius(typeof getComputedStyle === 'function' ? getComputedStyle(lens).borderTopLeftRadius : '0', w, h)
-      )
+      const target = element || lens
+      const computedRadius = typeof getComputedStyle === 'function'
+        ? (getComputedStyle(target).borderTopLeftRadius || getComputedStyle(lens).borderTopLeftRadius)
+        : '0'
+      let radius = Math.round(resolveRadius(computedRadius, w, h))
+      if (radius < 1 && (element?.classList?.contains('tab-pill') || element?.classList?.contains('start'))) {
+        radius = Math.round(Math.min(w, h) / 2)
+      } else if (radius > Math.min(w, h) / 2) {
+        radius = Math.round(Math.min(w, h) / 2)
+      }
       const prev = mapRef.current
       if (
         fluidRef.current?.fluid &&
@@ -1147,7 +1176,7 @@ export function useLiquidGlass(options, rootRef) {
   const spec = material === 'regular' ? (dark ? MATERIALS.regular.dark : MATERIALS.regular.light) : null
 
   const cssTone = `saturate(${saturation}) brightness(${dark ? brightness * 0.88 : brightness})`
-  const engineBlur = engine === 'webkit' ? Math.min(fallbackBlur, 16) : fallbackBlur
+  const engineBlur = engine === 'webkit' ? Math.max(fallbackBlur, 20) : fallbackBlur
   const backdrop = refracting
     ? `url(#${map.filterId})${blur > 0 ? ` blur(${blur}px)` : ''}`
     : material === 'regular'
@@ -1172,7 +1201,7 @@ export function useLiquidGlass(options, rootRef) {
           pointerEvents: 'none',
           backdropFilter: backdrop,
           WebkitBackdropFilter: backdrop,
-          clipPath: map?.clip,
+          clipPath: mode === 'refract' ? map?.clip : undefined,
           transform: fluidTransform,
           transformOrigin: '0 0',
         }}
@@ -1183,8 +1212,10 @@ export function useLiquidGlass(options, rootRef) {
             aria-hidden="true"
             style={{
               position: 'absolute',
-              inset: -2,
+              inset: 0,
               zIndex: -1,
+              borderRadius: 'inherit',
+              overflow: 'hidden',
               pointerEvents: 'none',
               backgroundImage: map.overlay ? `url(${map.overlay})` : 'none',
               backgroundSize: '100% 100%',
@@ -1193,7 +1224,7 @@ export function useLiquidGlass(options, rootRef) {
               transformOrigin: '0 0',
             }}
           />
-          {!refracting && (material === 'regular' || dark) ? (
+          {!refracting ? (
             <span
               aria-hidden="true"
               style={{
@@ -1209,7 +1240,15 @@ export function useLiquidGlass(options, rootRef) {
                       : dark
                         ? `rgb(16 16 18 / ${spec.fillOpacity})`
                         : `rgb(255 255 255 / ${spec.fillOpacity})`
-                    : 'rgb(8 8 10 / 0.16)',
+                    : dark
+                      ? 'rgba(18, 22, 30, 0.72)'
+                      : 'rgba(255, 255, 255, 0.78)',
+                border: dark
+                  ? '1px solid rgba(255, 255, 255, 0.12)'
+                  : '1px solid rgba(0, 0, 0, 0.08)',
+                boxShadow: dark
+                  ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.18)'
+                  : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.8)',
               }}
             />
           ) : null}

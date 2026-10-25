@@ -57,4 +57,42 @@ describe('LiquidGlass component', () => {
     })
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
+
+  it('detects Chrome on iOS (CriOS) as webkit, not chromium', async () => {
+    const { detectEngine, isIOS } = await import('./LiquidGlass.jsx')
+    const originalUA = navigator.userAgent
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/124.0.6367.88 Mobile/15E148 Safari/604.1',
+        configurable: true,
+      })
+      expect(isIOS()).toBe(true)
+      expect(detectEngine(true)).toBe('webkit')
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUA,
+        configurable: true,
+      })
+    }
+  })
+
+  it('renders webkit/iOS frosted glass without clipPath bug and with proper frosted backdrop layer', () => {
+    act(() => {
+      root.render(
+        <LiquidGlass mode="frost" appearance="dark" material="clear" data-testid="ios-glass">
+          <span>iOS Glass</span>
+        </LiquidGlass>
+      )
+    })
+
+    const el = host.querySelector('[data-testid="ios-glass"]')
+    expect(el).not.toBeNull()
+    expect(el.getAttribute('data-liquid-glass')).toBe('frost')
+
+    // Lens element must not have clip-path in frost mode to avoid breaking WebKit backdrop-filter
+    const lens = el.querySelector('span[aria-hidden="true"]')
+    expect(lens).not.toBeNull()
+    expect(lens.style.clipPath).toBeFalsy()
+    expect(lens.style.backdropFilter).toContain('blur')
+  })
 })
