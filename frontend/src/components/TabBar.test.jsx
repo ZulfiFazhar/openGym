@@ -53,32 +53,48 @@ describe('the tab bar across a store write', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(tabs()[0].className).toBe('on')
     expect(tabs()[1].className).toBe('')
-    expect(tabs()[4].className).toBe('start')
+    expect(tabs()[2].className).toBe('start')
 
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
-    expect(tabs()[4].className).toBe('start rec')
+    expect(tabs()[2].className).toBe('start rec')
     expect(tabs()[0].className).toBe('on')
   })
 
-  it('renders default classic dock navigation when dockNav is default or unset', () => {
+  it('renders default classic OpenGym dock navigation (DuarteSantos8/openGym) with center Start button', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const navEl = host.querySelector('#tabbar')
     const pill = host.querySelector('#tabbar .tab-pill')
     const startBtn = host.querySelector('#tabbar button.start')
-    expect(navEl.getAttribute('data-dock')).toBe('default')
+    expect(navEl.getAttribute('data-layout')).toBe('classic')
+    expect(pill).toBeNull()
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toBeNull()
+    expect(tabs().map(t => t.querySelector('svg')?.getAttribute('data-icon'))).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
+  })
+
+  it('renders modern floating dock without liquid glass when dockLayout is modern and liquidGlass is off', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern'; s.liquidGlass = false }, false) })
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-layout')).toBe('modern')
+    expect(navEl.getAttribute('data-liquid-glass')).toBe('false')
     expect(pill).not.toBeNull()
     expect(pill.getAttribute('data-liquid-glass')).toBeNull()
     expect(startBtn).not.toBeNull()
     expect(startBtn.getAttribute('data-liquid-glass')).toBeNull()
+    expect(tabs().map(t => t.querySelector('svg')?.getAttribute('data-icon'))).toEqual(['house', 'calendar', 'chart', 'dumbbell', 'play'])
   })
 
-  it('renders tab pill and start button with Apple Tahoe liquid glass when dockNav is modern', () => {
-    act(() => { useStore.getState().update(s => { s.dockNav = 'modern' }, false) })
+  it('renders modern floating dock with Apple Tahoe liquid glass when dockLayout is modern and liquidGlass is on', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern'; s.liquidGlass = true }, false) })
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     const navEl = host.querySelector('#tabbar')
     const pill = host.querySelector('#tabbar .tab-pill')
     const startBtn = host.querySelector('#tabbar button.start')
-    expect(navEl.getAttribute('data-dock')).toBe('modern')
+    expect(navEl.getAttribute('data-layout')).toBe('modern')
+    expect(navEl.getAttribute('data-liquid-glass')).toBe('true')
     expect(pill).not.toBeNull()
     expect(pill.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
     expect(startBtn).not.toBeNull()
@@ -111,7 +127,18 @@ describe('the connection dot on Home', () => {
 describe('the tab icons and labels', () => {
   const icon = el => el.querySelector('svg')?.getAttribute('data-icon')
   const label = el => el.querySelector('span:last-child').textContent
-  it('labels every tab and uses one icon per concept', () => {
+  it('labels every tab and uses one icon per concept in classic layout', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
+    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
+
+    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
+    expect(icon(tabs()[2])).toBe('play')
+    expect(label(tabs()[2])).toBe('Resume')
+  })
+
+  it('labels every tab and uses one icon per concept in modern layout', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern' }, false) })
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(tabs().map(icon)).toEqual(['house', 'calendar', 'chart', 'dumbbell', 'play'])
     expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Stats', 'Exercises', 'Start'])
@@ -127,16 +154,16 @@ describe('the tab icons and labels', () => {
       vi.setSystemTime(new Date(2026, 9, 5, 18, 0, 0))
       act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0, start: Date.now() - 754_000 } }, false) })
       act(() => { root.render(<TabBar onStart={() => {}} />) })
-      const start = tabs()[4]
+      const start = tabs()[2]
       expect(label(start)).toBe('12:34')
       expect(start.getAttribute('aria-label')).toBe('Resume')
       act(() => { vi.advanceTimersByTime(2000) })
       expect(label(start)).toBe('12:36')
-      expect(tabs()[4]).toBe(start)   // the same button, only its text ticks
+      expect(tabs()[2]).toBe(start)   // the same button, only its text ticks
 
       // a past workout being edited has no clock running
       act(() => { useStore.getState().update(s => { s.active.editingWorkoutId = 'w1' }, false) })
-      expect(label(tabs()[4])).toBe('Edit workout')
+      expect(label(tabs()[2])).toBe('Edit workout')
     } finally { vi.useRealTimers() }
   })
 })

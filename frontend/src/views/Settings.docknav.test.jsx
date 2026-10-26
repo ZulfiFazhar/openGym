@@ -24,7 +24,11 @@ const mocks = vi.hoisted(() => {
 vi.mock('../store/useStore.js', () => {
   const useStore = selector => selector ? selector(mocks.snapshot()) : mocks.snapshot()
   useStore.getState = mocks.snapshot
-  return { useStore, DEF: { reminder: { time: '17:30' }, dockNav: 'default' }, hasData: () => false }
+  return {
+    useStore,
+    DEF: { reminder: { time: '17:30' }, dockLayout: 'classic', liquidGlass: false },
+    hasData: () => false,
+  }
 })
 vi.mock('../store/useUI.js', () => {
   const snap = () => ({ toast: vi.fn(), openSheet: vi.fn() })
@@ -51,7 +55,8 @@ let host, root
 beforeEach(() => {
   mocks.S = {
     theme: 'dark', accent: 'lime', body: 'male',
-    dockNav: 'default', workouts: [], routines: [], exWeights: {},
+    dockLayout: 'classic', liquidGlass: false,
+    workouts: [], routines: [], exWeights: {},
   }
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -64,25 +69,51 @@ afterEach(() => {
 
 const mount = () => act(() => root.render(<Settings page="look" />))
 const segButton = label => [...host.querySelectorAll('.seg button')].find(b => b.textContent === label)
+const switchFor = label => {
+  const rows = [...host.querySelectorAll('.lrow')]
+  const row = rows.find(r => r.querySelector('.lrow-t')?.textContent?.includes(label))
+  return row?.querySelector('input[type="checkbox"], [role="switch"], button.switch')
+}
 
-describe('Settings — navigation dock style', () => {
-  it('offers Classic and Modern and writes dockNav to the store', () => {
+describe('Settings — navigation dock & liquid glass options', () => {
+  it('offers Classic and Modern dock layouts, defaulting to Classic', () => {
     mount()
     expect(segButton('Classic')).toBeTruthy()
     expect(segButton('Modern')).toBeTruthy()
     expect(segButton('Classic').getAttribute('aria-pressed')).toBe('true')
+    // Liquid glass switch is hidden when Classic layout is chosen
+    expect(switchFor('Liquid glass effect')).toBeFalsy()
 
     act(() => { segButton('Modern').click() })
-    expect(mocks.S.dockNav).toBe('modern')
+    expect(mocks.S.dockLayout).toBe('modern')
 
     mount()
     expect(segButton('Modern').getAttribute('aria-pressed')).toBe('true')
+    // Liquid glass switch is visible when Modern layout is active
+    expect(switchFor('Liquid glass effect')).toBeTruthy()
   })
 
-  it('treats absent/legacy dockNav as default Classic', () => {
-    mocks.S.dockNav = undefined
+  it('toggles liquid glass on and off when modern dock layout is selected', () => {
+    mocks.S.dockLayout = 'modern'
+    mocks.S.liquidGlass = false
+    mount()
+    const lgSwitch = switchFor('Liquid glass effect')
+    expect(lgSwitch).toBeTruthy()
+    expect(lgSwitch.getAttribute('aria-checked')).toBe('false')
+
+    act(() => { lgSwitch.click() })
+    expect(mocks.S.liquidGlass).toBe(true)
+
+    mount()
+    const activeSwitch = switchFor('Liquid glass effect')
+    expect(activeSwitch.getAttribute('aria-checked')).toBe('true')
+  })
+
+  it('treats absent/legacy dockLayout as classic', () => {
+    mocks.S.dockLayout = undefined
     mount()
     expect(segButton('Classic').getAttribute('aria-pressed')).toBe('true')
     expect(segButton('Modern').getAttribute('aria-pressed')).toBe('false')
+    expect(switchFor('Liquid glass effect')).toBeFalsy()
   })
 })

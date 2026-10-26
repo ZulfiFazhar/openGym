@@ -392,9 +392,75 @@ h4.sec{
    letting text through. The blur is also down from 24px to 10px: this is a fixed element, so
    the WebView recomposites the blurred region on every scroll frame, and on Android that is
    the single most expensive thing on the screen. See @supports below for the no-blur case. */
-#tabbar{
+#tabbar, #tabbar[data-layout="classic"]{
+  position:fixed;inset-inline-start:0;inset-inline-end:0;bottom:0;z-index:50;
+  display:flex;justify-content:space-around;align-items:flex-end;
+  padding:7px 6px calc(6px + var(--sab));
+  background:color-mix(in srgb,var(--bg-el) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
+  border-top:var(--hair) solid var(--sep-op);
+  gap:0;pointer-events:auto;
+}
+:root[data-theme="light"] #tabbar, :root[data-theme="light"] #tabbar[data-layout="classic"]{
+  background:rgba(249,249,251,.94);
+}
+#tabbar:not([data-layout="modern"]) button{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  transition:color var(--fast);background:none;border:none;border-radius:0;height:auto;margin:0;
+  pointer-events:auto;
+}
+#tabbar:not([data-layout="modern"]) button .icn{
+  font-size:25px;--icon-stroke:1.65;color:var(--label);
+  transform:none;filter:none;
+}
+#tabbar:not([data-layout="modern"]) button.on{
+  color:var(--acc);
+}
+#tabbar:not([data-layout="modern"]) button.on .icn{
+  --icon-stroke:2;color:inherit;opacity:1;
+  transform:none;filter:none;
+}
+#tabbar:not([data-layout="modern"]) button.on span:last-child{
+  font-weight:500;color:inherit;
+}
+#tabbar:not([data-layout="modern"]) button.start{
+  margin-top:-24px;width:auto;height:auto;border-radius:0;box-shadow:none;background:transparent;
+  border:none;flex-shrink:1;
+}
+#tabbar:not([data-layout="modern"]) button.start:active{transform:none}
+#tabbar:not([data-layout="modern"]) button.start .tab-label{display:block}
+#tabbar:not([data-layout="modern"]) button.start .cir{
+  width:52px;height:52px;border-radius:50%;background:var(--acc);color:var(--on-acc);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:0 6px 18px -4px color-mix(in srgb,var(--acc) 55%,transparent);
+  transition:transform var(--fast) var(--ease);
+}
+#tabbar:not([data-layout="modern"]) button.start:active .cir{transform:scale(.93)}
+#tabbar:not([data-layout="modern"]) button.start .cir .icn{
+  font-size:26px;--icon-stroke:2;color:inherit;opacity:1;margin-left:0;
+}
+#tabbar:not([data-layout="modern"]) button.start span{
+  color:var(--acc);font-weight:600;font-size:10px;display:block;
+}
+#tabbar:not([data-layout="modern"]) button.start .cir{color:var(--on-acc)}
+#tabbar:not([data-layout="modern"]) button.start.rec .cir{
+  background:var(--orange);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent);
+}
+#tabbar:not([data-layout="modern"]) button.start.rec .cir::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
+}
+#tabbar:not([data-layout="modern"]) button.start.rec span{color:var(--orange)}
+#tabbar:not([data-layout="modern"]) button.start .tab-time{
+  font-variant-numeric:tabular-nums;color:var(--acc);font-size:10px;font-weight:600;display:block;
+}
+
+/* ------------------------------------------------------------ modern pill dock -- */
+#tabbar[data-layout="modern"]{
   position:fixed;inset-inline-start:14px;inset-inline-end:14px;bottom:calc(14px + var(--sab));z-index:50;
   display:flex;align-items:center;justify-content:center;gap:12px;pointer-events:none;
+  background:none;border-top:none;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none;
 }
 #tabbar .tab-pill{
   pointer-events:auto;flex:1;max-width:390px;height:58px;display:flex;align-items:center;justify-content:space-around;
@@ -408,16 +474,16 @@ h4.sec{
   border:none;
   box-shadow:0 8px 24px -4px rgba(0,0,0,0.08);
 }
-#tabbar[data-dock="default"] .tab-pill{
+#tabbar[data-layout="modern"][data-liquid-glass="false"] .tab-pill{
   background:rgba(18, 21, 28, 0.75);
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,0.08);
 }
-:root[data-theme="light"] #tabbar[data-dock="default"] .tab-pill{
+:root[data-theme="light"] #tabbar[data-layout="modern"][data-liquid-glass="false"] .tab-pill{
   background:rgba(255, 255, 255, 0.80);
   border:1px solid rgba(0,0,0,0.06);
 }
-#tabbar .tab-pill-indicator{
+#tabbar[data-layout="modern"] .tab-pill-indicator{
   position:absolute;top:4px;bottom:4px;left:4px;
   width:calc((100% - 8px) / 4);
   border-radius:9999px;
@@ -430,39 +496,40 @@ h4.sec{
   transition:transform 0.32s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
   opacity:1;
 }
-:root[data-theme="light"] #tabbar .tab-pill-indicator{
+:root[data-theme="light"] #tabbar[data-layout="modern"] .tab-pill-indicator{
   background:rgba(0,0,0,0.05);
   box-shadow:0 2px 6px rgba(0,0,0,0.04);
 }
-#tabbar .tab-pill[data-active="-1"] .tab-pill-indicator{
+#tabbar[data-layout="modern"] .tab-pill[data-active="-1"] .tab-pill-indicator{
   opacity:0;
 }
 @media (prefers-reduced-motion: reduce){
-  #tabbar .tab-pill-indicator{transition:none}
+  #tabbar[data-layout="modern"] .tab-pill-indicator{transition:none}
 }
-#tabbar .tab-pill button{
+#tabbar[data-layout="modern"] .tab-pill button{
   flex:1;height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   color:rgba(255,255,255,.62);font-size:10px;font-weight:500;letter-spacing:.005em;border-radius:9999px;
   transition:all var(--fast) var(--ease);position:relative;background:none;border:none;margin:0;z-index:1;
+  pointer-events:auto;
 }
-:root[data-theme="light"] #tabbar .tab-pill button{
+:root[data-theme="light"] #tabbar[data-layout="modern"] .tab-pill button{
   color:rgba(0,0,0,.55);
 }
-#tabbar .tab-pill button .icn{font-size:20px;--icon-stroke:1.65;color:rgba(255,255,255,.62);transition:transform var(--fast) var(--ease),color var(--fast)}
-:root[data-theme="light"] #tabbar .tab-pill button .icn{color:rgba(0,0,0,.6)}
+#tabbar[data-layout="modern"] .tab-pill button .icn{font-size:20px;--icon-stroke:1.65;color:rgba(255,255,255,.62);transition:transform var(--fast) var(--ease),color var(--fast)}
+:root[data-theme="light"] #tabbar[data-layout="modern"] .tab-pill button .icn{color:rgba(0,0,0,.6)}
 
 /* --- Active Pill Focus --- */
-#tabbar .tab-pill button.on{
+#tabbar[data-layout="modern"] .tab-pill button.on{
   color:var(--acc);
 }
-#tabbar .tab-pill button.on .icn{
+#tabbar[data-layout="modern"] .tab-pill button.on .icn{
   --icon-stroke:2.1;color:var(--acc);transform:translateY(-1px);
   filter:drop-shadow(0 0 8px color-mix(in srgb,var(--acc) 65%,transparent));
 }
-#tabbar .tab-pill button.on span:last-child{
+#tabbar[data-layout="modern"] .tab-pill button.on span:last-child{
   font-weight:600;color:var(--acc);
 }
-#tabbar .tab-pill button:active{transform:scale(.94)}
+#tabbar[data-layout="modern"] .tab-pill button:active{transform:scale(.94)}
 #tabbar .tab-ic{position:relative;display:inline-flex}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
@@ -471,7 +538,7 @@ h4.sec{
 .iconbtn .tab-dot{top:5px;right:5px;box-shadow:0 0 0 2px var(--bg)}
 
 #tabbar button.start{
-  pointer-events:auto;width:58px;height:58px;border-radius:50%;flex-shrink:0;
+  pointer-events:auto;width:58px;height:58px;border-radius:50%;flex-shrink:0;margin-top:0;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
   border:none;
@@ -483,18 +550,18 @@ h4.sec{
   border:none;
   box-shadow:0 8px 24px -4px rgba(0,0,0,0.08);
 }
-#tabbar[data-dock="default"] button.start{
+#tabbar[data-layout="modern"][data-liquid-glass="false"] button.start{
   background:rgba(18, 21, 28, 0.75);
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,0.08);
 }
-:root[data-theme="light"] #tabbar[data-dock="default"] button.start{
+:root[data-theme="light"] #tabbar[data-layout="modern"][data-liquid-glass="false"] button.start{
   background:rgba(255, 255, 255, 0.80);
   border:1px solid rgba(0,0,0,0.06);
 }
-#tabbar button.start:active{transform:scale(.92)}
-#tabbar button.start .tab-label{display:none}
-#tabbar button.start .cir{
+#tabbar[data-layout="modern"] button.start:active{transform:scale(.92)}
+#tabbar[data-layout="modern"] button.start .tab-label{display:none}
+#tabbar[data-layout="modern"] button.start .cir{
   width:46px;height:46px;border-radius:50%;
   background:var(--acc);
   color:var(--on-acc);
@@ -502,16 +569,16 @@ h4.sec{
   box-shadow:0 4px 14px -2px color-mix(in srgb,var(--acc) 50%,transparent);
   transition:transform var(--fast) var(--ease);
 }
-#tabbar button.start .cir .icn{font-size:22px;--icon-stroke:2.2;color:inherit;margin-left:2px}
-#tabbar button.start.rec .cir{
+#tabbar[data-layout="modern"] button.start .cir .icn{font-size:22px;--icon-stroke:2.2;color:inherit;margin-left:2px}
+#tabbar[data-layout="modern"] button.start.rec .cir{
   background:var(--orange);
   color:#000;box-shadow:0 4px 14px -2px color-mix(in srgb,var(--orange) 60%,transparent);
 }
-#tabbar button.start.rec .cir::after{
+#tabbar[data-layout="modern"] button.start.rec .cir::after{
   content:'';position:absolute;inset:-3px;border-radius:50%;
   border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
 }
-#tabbar button.start .tab-time{
+#tabbar[data-layout="modern"] button.start .tab-time{
   position:absolute;bottom:-14px;font-size:9px;font-weight:700;font-variant-numeric:tabular-nums;
   color:var(--orange);background:var(--bg-el);padding:1px 5px;border-radius:8px;border:1px solid var(--orange);white-space:nowrap;
 }

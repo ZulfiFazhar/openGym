@@ -44,10 +44,35 @@ export default function TabBar({ onStart }) {
     nav('/workout')
   }
 
-  const isModern = S.dockNav === 'modern'
+  const isModern = S.dockLayout === 'modern'
   const isLight = (typeof document !== 'undefined' && document.documentElement?.dataset?.theme === 'light') || S.theme === 'light'
   const appearance = isLight ? 'light' : 'dark'
 
+  const startButtonClass = 'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')
+  const startButtonLabel = S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')
+
+  if (!isModern) {
+    // Classic upstream openGym dock navigation (full-width bottom bar with center Start button)
+    return (
+      <nav id="tabbar" data-layout="classic">
+        <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
+        <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
+        <button
+          className={startButtonClass}
+          onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}
+        >
+          <span className="cir"><Icon name="play" /></span>
+          {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+            : <span>{startButtonLabel}</span>}
+        </button>
+        <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+        <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
+      </nav>
+    )
+  }
+
+  // Modern floating dock navigation (4-tab pill + separate floating Start button)
   const tabPillContent = (
     <>
       <div className="tab-pill-indicator" aria-hidden="true" />
@@ -62,13 +87,13 @@ export default function TabBar({ onStart }) {
     <>
       <span className="cir"><Icon name="play" /></span>
       {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
-        : <span className="tab-label">{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
+        : <span className="tab-label">{startButtonLabel}</span>}
     </>
   )
 
   return (
-    <nav id="tabbar" data-dock={isModern ? 'modern' : 'default'}>
-      {isModern ? (
+    <nav id="tabbar" data-layout="modern" data-liquid-glass={S.liquidGlass ? 'true' : 'false'}>
+      {S.liquidGlass ? (
         <LiquidGlass
           className="tab-pill"
           appearance={appearance}
@@ -91,14 +116,14 @@ export default function TabBar({ onStart }) {
         </div>
       )}
 
-      {isModern ? (
+      {S.liquidGlass ? (
         <LiquidGlassButton
           interactive
           appearance={appearance}
           material="clear"
           refraction={18}
           bezel={24}
-          className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
+          className={startButtonClass}
           onClick={startWorkout}
           aria-label={running ? t('Resume') : undefined}
         >
@@ -106,7 +131,7 @@ export default function TabBar({ onStart }) {
         </LiquidGlassButton>
       ) : (
         <button
-          className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
+          className={startButtonClass}
           onClick={startWorkout}
           aria-label={running ? t('Resume') : undefined}
         >
