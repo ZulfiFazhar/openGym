@@ -61,6 +61,47 @@ describe('the tab bar across a store write', () => {
     expect(tabs()[2].className).toBe('start rec')
     expect(tabs()[0].className).toBe('on')
   })
+
+  it('renders default classic OpenGym dock navigation (DuarteSantos8/openGym) with center Start button', () => {
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-layout')).toBe('classic')
+    expect(pill).toBeNull()
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toBeNull()
+    expect(tabs().map(t => t.querySelector('svg')?.getAttribute('data-icon'))).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
+  })
+
+  it('renders modern floating dock without liquid glass when dockLayout is modern and liquidGlass is off', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern'; s.liquidGlass = false }, false) })
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-layout')).toBe('modern')
+    expect(navEl.getAttribute('data-liquid-glass')).toBe('false')
+    expect(pill).not.toBeNull()
+    expect(pill.getAttribute('data-liquid-glass')).toBeNull()
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toBeNull()
+    expect(tabs().map(t => t.querySelector('svg')?.getAttribute('data-icon'))).toEqual(['house', 'calendar', 'chart', 'dumbbell', 'play'])
+  })
+
+  it('renders modern floating dock with Apple Tahoe liquid glass when dockLayout is modern and liquidGlass is on', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern'; s.liquidGlass = true }, false) })
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-layout')).toBe('modern')
+    expect(navEl.getAttribute('data-liquid-glass')).toBe('true')
+    expect(pill).not.toBeNull()
+    expect(pill.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
+  })
 })
 
 // Settings → "Show connection status" off (#369, #330): a stuck sync shows as a dot on Home, the
@@ -88,7 +129,7 @@ describe('the connection dot on Home', () => {
 describe('the tab icons and labels', () => {
   const icon = el => el.querySelector('svg')?.getAttribute('data-icon')
   const label = el => el.querySelector('span:last-child').textContent
-  it('labels every tab and uses one icon per concept', () => {
+  it('labels every tab and uses one icon per concept in classic layout', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(tabs().map(icon)).toEqual(['house', 'calendar', 'play', 'chart', 'dumbbell'])
     expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Start', 'Stats', 'Exercises'])
@@ -96,6 +137,17 @@ describe('the tab icons and labels', () => {
     act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
     expect(icon(tabs()[2])).toBe('play')
     expect(label(tabs()[2])).toBe('Resume')
+  })
+
+  it('labels every tab and uses one icon per concept in modern layout', () => {
+    act(() => { useStore.getState().update(s => { s.dockLayout = 'modern' }, false) })
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    expect(tabs().map(icon)).toEqual(['house', 'calendar', 'chart', 'dumbbell', 'play'])
+    expect(tabs().map(label)).toEqual(['Home', 'Plan', 'Stats', 'Exercises', 'Start'])
+
+    act(() => { useStore.getState().update(s => { s.active = { id: 'a', entries: [], cur: 0 } }, false) })
+    expect(icon(tabs()[4])).toBe('play')
+    expect(label(tabs()[4])).toBe('Resume')
   })
 
   it('shows a minimized session’s running time, still named Resume', () => {
@@ -135,5 +187,34 @@ describe('the tab a screen without its own lights', () => {
     where.loc = { pathname: '/muscles', state: { from: '/stats' } }
     act(() => { root.render(<TabBar onStart={() => {}} />) })
     expect(lit()).toEqual(['Stats'])
+  })
+})
+
+describe('dock navigation styling', () => {
+  it('uses Apple Tahoe liquid glass architecture without legacy CSS gradient hacks', async () => {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const cssPath = path.resolve(__dirname, '../index.css')
+    const css = fs.readFileSync(cssPath, 'utf8')
+
+    const pillMatch = css.match(/#tabbar \.tab-pill\{([^}]+)\}/)
+    expect(pillMatch).toBeTruthy()
+    const pillRules = pillMatch[1]
+
+    // Legacy CSS liquid glass hacks removed
+    expect(pillRules).not.toContain('saturate(190%)')
+    expect(pillRules).not.toContain('inset 0 1px 1px')
+    expect(pillRules).not.toContain('linear-gradient')
+
+    // Clean transparent background for liquid glass lens
+    expect(pillRules).toContain('background:transparent')
+
+    const startMatch = css.match(/#tabbar button\.start\{([^}]+)\}/)
+    expect(startMatch).toBeTruthy()
+    const startRules = startMatch[1]
+    expect(startRules).not.toContain('saturate(190%)')
+    expect(startRules).not.toContain('inset 0 1px 1px')
+    expect(startRules).not.toContain('linear-gradient')
+    expect(startRules).toContain('background:transparent')
   })
 })

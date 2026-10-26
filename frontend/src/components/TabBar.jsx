@@ -6,6 +6,7 @@ import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
+import { LiquidGlass, LiquidGlassButton } from './ui/LiquidGlass.jsx'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
@@ -34,6 +35,7 @@ export default function TabBar({ onStart }) {
   const PARENT = { history: 'stats', 'structural-balance': 'stats', 'progress-photos': 'stats', measurements: 'stats', settings: 'home', checkin: 'home', muscles: 'library' }
   const parent = cur === 'muscles' && loc.state?.from === '/stats' ? 'stats' : PARENT[cur]
   const on = k => cur === k || parent === k
+  const activeIdx = on('home') ? 0 : on('plan') ? 1 : on('stats') ? 2 : on('library') ? 3 : -1
 
   // Root tabs are peers, not another level to unwind with Android Back.
   const switchTab = path => {
@@ -50,25 +52,104 @@ export default function TabBar({ onStart }) {
     nav('/workout')
   }
 
-  return (
-    <nav id="tabbar">
+  const isModern = S.dockLayout === 'modern'
+  const isLight = (typeof document !== 'undefined' && document.documentElement?.dataset?.theme === 'light') || S.theme === 'light'
+  const appearance = isLight ? 'light' : 'dark'
+
+  const startButtonClass = 'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')
+  const startButtonLabel = S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')
+
+  if (!isModern) {
+    // Classic upstream openGym dock navigation (full-width bottom bar with center Start button)
+    return (
+      <nav id="tabbar" data-layout="classic">
+        <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => switchTab('/home')} />
+        <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} />
+        {/* On the workout screen itself there is nothing to resume, so the button reads as the
+            tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
+            were on — the marker is kept in S.active.cur and never moves on its own (#21). The
+            glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
+            A live session you stepped away from shows its running time instead of a word, the
+            button still named Resume; a past workout being edited or logged after the fact has no
+            clock to run. */}
+        <button className={startButtonClass} onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}>
+          <span className="cir"><Icon name="play" /></span>
+          {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+            : <span>{startButtonLabel}</span>}
+        </button>
+        <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} />
+        <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} />
+      </nav>
+    )
+  }
+
+  // Modern floating dock navigation (4-tab pill + separate floating Start button)
+  const tabPillContent = (
+    <>
+      <div className="tab-pill-indicator" aria-hidden="true" />
       <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => switchTab('/home')} />
       <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} />
-      {/* On the workout screen itself there is nothing to resume, so the button reads as the
-          tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
-          were on — the marker is kept in S.active.cur and never moves on its own (#21). The
-          glyph is always play: start and resume are one concept, and an exercise is a dumbbell.
-          A live session you stepped away from shows its running time instead of a word, the
-          button still named Resume; a past workout being edited or logged after the fact has no
-          clock to run. */}
-      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
-        aria-label={running ? t('Resume') : undefined}>
-        <span className="cir"><Icon name="play" /></span>
-        {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
-          : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
-      </button>
       <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} />
       <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} />
+    </>
+  )
+
+  const startButtonContent = (
+    <>
+      <span className="cir"><Icon name="play" /></span>
+      {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+        : <span className="tab-label">{startButtonLabel}</span>}
+    </>
+  )
+
+  return (
+    <nav id="tabbar" data-layout="modern" data-liquid-glass={S.liquidGlass ? 'true' : 'false'}>
+      {S.liquidGlass ? (
+        <LiquidGlass
+          className="tab-pill"
+          appearance={appearance}
+          material="clear"
+          refraction={22}
+          bezel={26}
+          blur={1.5}
+          data-active={activeIdx}
+          style={{ '--active-idx': activeIdx }}
+        >
+          {tabPillContent}
+        </LiquidGlass>
+      ) : (
+        <div
+          className="tab-pill"
+          data-active={activeIdx}
+          style={{ '--active-idx': activeIdx }}
+        >
+          {tabPillContent}
+        </div>
+      )}
+
+      {S.liquidGlass ? (
+        <LiquidGlassButton
+          interactive
+          appearance={appearance}
+          material="clear"
+          refraction={18}
+          bezel={24}
+          className={startButtonClass}
+          onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}
+        >
+          {startButtonContent}
+        </LiquidGlassButton>
+      ) : (
+        <button
+          className={startButtonClass}
+          onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}
+        >
+          {startButtonContent}
+        </button>
+      )}
     </nav>
   )
 }

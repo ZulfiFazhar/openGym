@@ -830,6 +830,28 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </div>
         {/* The home-screen icon: the phone's own, not synced. iPhone only in 1.4.3 (Android follows). */}
         {MOBILE && platformNow() === 'ios' && <AppIconRow />}
+        <Row icon="layout" iconTint="var(--blue)" title={t('Navigation dock')}
+          subtitle={t('Choose between the classic OpenGym bottom bar and the modern floating dock.')}>
+          <Segmented
+            className="seg-inline"
+            options={[
+              { value: 'classic', label: t('Classic') },
+              { value: 'modern', label: t('Modern') },
+            ]}
+            value={S.dockLayout === 'modern' ? 'modern' : 'classic'}
+            onChange={v => update(s => { s.dockLayout = v })}
+          />
+        </Row>
+        {S.dockLayout === 'modern' && (
+          <Row icon="sparkles" iconTint="var(--purple)" title={t('Liquid glass effect')}
+            subtitle={t('Enable Apple Tahoe optical refraction and liquid glass on the modern dock.')}>
+            <Switch
+              aria-label={t('Liquid glass effect')}
+              checked={!!S.liquidGlass}
+              onChange={v => update(s => { s.liquidGlass = v })}
+            />
+          </Row>
+        )}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
