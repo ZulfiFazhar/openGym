@@ -44,41 +44,75 @@ export default function TabBar({ onStart }) {
     nav('/workout')
   }
 
+  const isModern = S.dockNav === 'modern'
   const isLight = (typeof document !== 'undefined' && document.documentElement?.dataset?.theme === 'light') || S.theme === 'light'
   const appearance = isLight ? 'light' : 'dark'
 
+  const tabPillContent = (
+    <>
+      <div className="tab-pill-indicator" aria-hidden="true" />
+      <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
+      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
+    </>
+  )
+
+  const startButtonContent = (
+    <>
+      <span className="cir"><Icon name="play" /></span>
+      {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
+        : <span className="tab-label">{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
+    </>
+  )
+
   return (
-    <nav id="tabbar">
-      <LiquidGlass
-        className="tab-pill"
-        appearance={appearance}
-        material="clear"
-        refraction={22}
-        bezel={26}
-        blur={1.5}
-        data-active={activeIdx}
-        style={{ '--active-idx': activeIdx }}
-      >
-        <div className="tab-pill-indicator" aria-hidden="true" />
-        <Tab active={on('home')} icon="house" label={t('Home')} dot={trouble} onClick={() => nav('/home')} />
-        <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
-        <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
-        <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
-      </LiquidGlass>
-      <LiquidGlassButton
-        interactive
-        appearance={appearance}
-        material="clear"
-        refraction={18}
-        bezel={24}
-        className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
-        onClick={startWorkout}
-        aria-label={running ? t('Resume') : undefined}
-      >
-        <span className="cir"><Icon name="play" /></span>
-        {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
-          : <span className="tab-label">{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
-      </LiquidGlassButton>
+    <nav id="tabbar" data-dock={isModern ? 'modern' : 'default'}>
+      {isModern ? (
+        <LiquidGlass
+          className="tab-pill"
+          appearance={appearance}
+          material="clear"
+          refraction={22}
+          bezel={26}
+          blur={1.5}
+          data-active={activeIdx}
+          style={{ '--active-idx': activeIdx }}
+        >
+          {tabPillContent}
+        </LiquidGlass>
+      ) : (
+        <div
+          className="tab-pill"
+          data-active={activeIdx}
+          style={{ '--active-idx': activeIdx }}
+        >
+          {tabPillContent}
+        </div>
+      )}
+
+      {isModern ? (
+        <LiquidGlassButton
+          interactive
+          appearance={appearance}
+          material="clear"
+          refraction={18}
+          bezel={24}
+          className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
+          onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}
+        >
+          {startButtonContent}
+        </LiquidGlassButton>
+      ) : (
+        <button
+          className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')}
+          onClick={startWorkout}
+          aria-label={running ? t('Resume') : undefined}
+        >
+          {startButtonContent}
+        </button>
+      )}
     </nav>
   )
 }

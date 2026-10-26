@@ -60,10 +60,25 @@ describe('the tab bar across a store write', () => {
     expect(tabs()[0].className).toBe('on')
   })
 
-  it('renders tab pill and start button with Apple Tahoe liquid glass attributes', () => {
+  it('renders default classic dock navigation when dockNav is default or unset', () => {
     act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
     const pill = host.querySelector('#tabbar .tab-pill')
     const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-dock')).toBe('default')
+    expect(pill).not.toBeNull()
+    expect(pill.getAttribute('data-liquid-glass')).toBeNull()
+    expect(startBtn).not.toBeNull()
+    expect(startBtn.getAttribute('data-liquid-glass')).toBeNull()
+  })
+
+  it('renders tab pill and start button with Apple Tahoe liquid glass when dockNav is modern', () => {
+    act(() => { useStore.getState().update(s => { s.dockNav = 'modern' }, false) })
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    const navEl = host.querySelector('#tabbar')
+    const pill = host.querySelector('#tabbar .tab-pill')
+    const startBtn = host.querySelector('#tabbar button.start')
+    expect(navEl.getAttribute('data-dock')).toBe('modern')
     expect(pill).not.toBeNull()
     expect(pill.getAttribute('data-liquid-glass')).toMatch(/frost|refract/)
     expect(startBtn).not.toBeNull()

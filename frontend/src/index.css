@@ -408,6 +408,15 @@ h4.sec{
   border:none;
   box-shadow:0 8px 24px -4px rgba(0,0,0,0.08);
 }
+#tabbar[data-dock="default"] .tab-pill{
+  background:rgba(18, 21, 28, 0.75);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.08);
+}
+:root[data-theme="light"] #tabbar[data-dock="default"] .tab-pill{
+  background:rgba(255, 255, 255, 0.80);
+  border:1px solid rgba(0,0,0,0.06);
+}
 #tabbar .tab-pill-indicator{
   position:absolute;top:4px;bottom:4px;left:4px;
   width:calc((100% - 8px) / 4);
@@ -473,6 +482,15 @@ h4.sec{
   background:transparent;
   border:none;
   box-shadow:0 8px 24px -4px rgba(0,0,0,0.08);
+}
+#tabbar[data-dock="default"] button.start{
+  background:rgba(18, 21, 28, 0.75);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.08);
+}
+:root[data-theme="light"] #tabbar[data-dock="default"] button.start{
+  background:rgba(255, 255, 255, 0.80);
+  border:1px solid rgba(0,0,0,0.06);
 }
 #tabbar button.start:active{transform:scale(.92)}
 #tabbar button.start .tab-label{display:none}

@@ -728,6 +728,18 @@ export default function Settings({ page = null, find = null, via = null }) {
           <span className="lrow-v">{accentLabel(S)}</span>
           <AccentSwatches S={S} update={update} />
         </div>
+        <Row icon="sparkles" iconTint="var(--blue)" title={t('Navigation dock')}
+          subtitle={t('Choose between the classic OpenGym dock and the modern liquid glass dock.')}>
+          <Segmented
+            className="seg-inline"
+            options={[
+              { value: 'default', label: t('Classic') },
+              { value: 'modern', label: t('Modern') },
+            ]}
+            value={S.dockNav === 'modern' ? 'modern' : 'default'}
+            onChange={v => update(s => { s.dockNav = v })}
+          />
+        </Row>
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
           <Segmented
